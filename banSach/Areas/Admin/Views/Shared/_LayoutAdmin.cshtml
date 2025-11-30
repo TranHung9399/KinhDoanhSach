@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link rel="shortcut icon" href="~/img/logo/logo.png" type="image/png">
+    <title>@ViewBag.Title</title>
+    
+    <!-- DataTables CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Custom Admin Styles -->
+    <link href="~/Content/css/adminPageStyle.css" rel="stylesheet" />
+    <link href="~/Content/css/detailUser.css" rel="stylesheet" />
+    <link href="~/Content/css/thongbao.css" rel="stylesheet" />
+    <link href="~/css/phantrang.css" rel="stylesheet" />
+    <link href="~/Content/admin-common.css" rel="stylesheet" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+    
+    <style>
+        body, .sb-sidenav, .navbar, .card-stat {
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        .icon-wrapper {
+            width: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .navbar-brand-image {
+            max-width: 60px;
+            max-height: 48px;
+            height: auto;
+            width: auto;
+            display: block;
+            margin: 0 8px 0 0;
+            padding: 2px 0;
+            object-fit: contain;
+        }
+
+        .navbar-brand.d-flex {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            height: 56px;
+            min-height: 56px;
+            padding: 0 12px;
+        }
+
+        .navbar {
+            background: #fff !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .navbar-brand span {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #388e3c;
+            letter-spacing: 1px;
+        }
+
+        .sb-sidenav {
+            background: #f8f9fa !important;
+            color: #222;
+        }
+
+            .sb-sidenav .nav-link {
+                color: #222;
+                font-weight: 500;
+                border-radius: 8px;
+                margin-bottom: 4px;
+                transition: background 0.2s, color 0.2s;
+                padding: 10px 18px;
+            }
+
+                .sb-sidenav .nav-link:hover, .sb-sidenav .nav-link.active {
+                    background: #e3f2fd;
+                    color: #1b5e20;
+                }
+
+            .sb-sidenav .icon-wrapper i {
+                color: #388e3c;
+                font-size: 1.2rem;
+            }
+
+            .sb-sidenav .nav-link .ms-2 {
+                font-size: 1rem;
+            }
+
+        .card-stat {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 24px 0;
+            background: #fff;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0 12px;
+        }
+
+            .card-stat .stat-number {
+                font-size: 2.2rem;
+                color: #388e3c;
+                margin: 8px 0;
+            }
+
+        .scrollable-container, body {
+            max-height: 300px;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #F5F7FA;
+        }
+
+            .scrollable-container, body::-webkit-scrollbar {
+                display: none;
+            }
+    </style>
+    
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    @{
+        // Lấy chức vụ của người dùng từ Session
+        var userRole = Session["ChucVu"] as string;
+    }
+    <nav class="sb-topnav navbar navbar-expand navbar-light bg-white shadow-sm">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="~/img/logo/logoo.jpg" alt="Logo" class="navbar-brand-image me-2">
+            <span>Hiệu Sách Con Cú Vọ</span>
+        </a>
+        <!-- Sidebar Toggle-->
+        <!-- Navbar-->
+        <ul class="navbar-nav ms-auto">
+            <li class="text-dark my-auto fw-bold">@ViewBag.HoTen</li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-dark"
+                   id="navbarDropdown"
+                   href="#"
+                   role="button"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false">
+                    <i class="fas fa-user fa-fw text-dark"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a href="@Url.Action("Index", "TaiKhoan", new { area = "Admin" })" class="dropdown-item">Quản lý tài khoản</a>
+                    </li>
+                    <li>
+                        @Html.ActionLink("Đăng xuất", "Logout", "Login", new { area = "Admin" }, new { @class = "dropdown-item" })
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    @*menu*@
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <a class="nav-link" href="@Url.Action("Index", "HomeAdmin")">
+                            <div class="icon-wrapper">
+                                <i class="fas fa-lg fa-tachometer-alt text-dark p3"></i>
+                            </div>
+                            <span class="ms-2 text-dark">Trang Chủ</span>
+                        </a>
+
+
+
+                        <!-- Kiểm tra chức vụ cho mục Nhân Viên -->
+                        @{
+                            if (userRole == "Quản Lý")
+                            {
+                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseNhanVien" aria-expanded="false" aria-controls="collapseLayouts">
+                                    <div class="icon-wrapper">
+                                        <i class="fa-solid fa-lg fa-user-group text-dark"></i>
+                                    </div>
+                                    <span class="ms-2 text-dark">Nhân Viên</span>
+                                    <div class="sb-sidenav-collapse-arrow">
+                                        <svg class="svg-inline--fa fa-angle-down text-dark" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-down" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-fa-i2svg=""><path fill="currentColor" d="M169.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 274.7 54.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"></path></svg>
+                                    </div>
+                                </a>
+                                <div class="collapse" id="collapseNhanVien" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav">
+                                        <a class="nav-link text-dark" href="@Url.Action("Index", "NhanViens")">Nhân Viên</a>
+                                        <a class="nav-link text-dark" href="@Url.Action("Index", "ChucVus")">Chức Vụ</a>
+                                    </nav>
+                                </div>
+                            }
+                        }
+
+                        <!-- Menu Phân Quyền -->
+                        @{
+                            if (userRole == "Quản Lý")
+                            {
+                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePhanQuyen" aria-expanded="false" aria-controls="collapsePhanQuyen">
+                                    <div class="icon-wrapper">
+                                        <i class="fa-solid fa-lg fa-shield-halved text-dark"></i>
+                                    </div>
+                                    <span class="ms-2 text-dark">Phân Quyền</span>
+                                    <div class="sb-sidenav-collapse-arrow">
+                                        <svg class="svg-inline--fa fa-angle-down text-dark" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-down" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-fa-i2svg=""><path fill="currentColor" d="M169.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 274.7 54.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"></path></svg>
+                                    </div>
+                                </a>
+                                <div class="collapse" id="collapsePhanQuyen" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav">
+                                        <a class="nav-link text-dark" href="@Url.Action("Index", "ChucNangs")">Chức Năng</a>
+                                        <a class="nav-link text-dark" href="@Url.Action("Index", "Quyens")">Quyền</a>
+                                    </nav>
+                                </div>
+                            }
+                        }
+
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDichVu" aria-expanded="false" aria-controls="collapseLayouts">
+                            <div class="icon-wrapper">
+                                <!-- Thay đổi icon ở đây -->
+                                <i class="fa-solid fa-lg fa-book text-dark"></i>
+                            </div>
+                            <span class="ms-2 text-dark">Sách</span>
+                            <div class="sb-sidenav-collapse-arrow">
+                                <svg class="svg-inline--fa fa-angle-down text-dark" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-down" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-fa-i2svg=""><path fill="currentColor" d="M169.4 342.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 274.7 54.6 137.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"></path></svg><!-- <i class="fas fa-angle-down"></i> Font Awesome fontawesome.com -->
+                            </div>
+                        </a>
+                        <div class="collapse" id="collapseDichVu" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion" style="">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link text-dark" href="@Url.Action("Index", "Sachs")">Sách</a>
+                                <a class="nav-link text-dark" href="@Url.Action("Index", "Loais")">Loại Sách</a>
+                                @if (userRole == "Quản Lý")
+                                {
+                                    <a class="nav-link text-dark" href="@Url.Action("Index", "TacGias")">Tác Giả</a>
+                                    <a class="nav-link text-dark" href="@Url.Action("Index", "NHAXUATBANs")">Nhà Xuất Bản</a>
+                                }
+                            </nav>
+                        </div>
+
+                        <a class="nav-link" href="@Url.Action("Index", "DonDatHangs")">
+                            <div class="icon-wrapper">
+                                <!-- Thay icon thành biểu tượng phù hợp với đơn hàng, ví dụ: fa-shopping-cart -->
+                                <i class="fa-solid fa-shopping-cart text-dark"></i>
+                            </div>
+                            <span class="ms-2 text-dark">Đơn Hàng</span>
+                        </a>
+
+                        <a class="nav-link" href="@Url.Action("Index", "DanhGias")">
+                            <div class="icon-wrapper">
+                                <i class="fa-solid fa-star text-dark"></i>
+                            </div>
+                            <span class="ms-2 text-dark">Đánh giá</span>
+                        </a>
+
+                        @if (userRole == "Quản Lý")
+                        {
+                            <a class="nav-link" href="@Url.Action("Index", "KhachHangs")">
+                                <div class="icon-wrapper">
+                                    <i class="fa-solid fa-users text-dark"></i>
+                                </div>
+                                <span class="ms-2 text-dark">Khách Hàng</span>
+                            </a>
+                        }
+
+                        <a class="nav-link" href="@Url.Action("Index", "MaGiamGias")">
+                            <div class="icon-wrapper">
+                                <i class="fa-solid fa-tag text-dark"></i>
+                            </div>
+                            <span class="ms-2 text-dark">Mã Giảm Giá</span>
+                        </a>
+
+                         @if (userRole == "Quản Lý")
+                         {
+                            <a class="nav-link" href="@Url.Action("Index", "ThongKe")">
+                                <div class="icon-wrapper">
+                                    <i class="fa-solid fa-chart-line text-dark"></i>
+                                </div>
+                                <span class="ms-2 text-dark">Thống kê</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+            </nav>
+        </div>
+        <div id="layoutSidenav_content" class="scrollable-container">
+            @RenderBody()
+
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright © Hiệu Sách Con Cú Vọ 2024</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            ·
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"></script>
+
+    <!-- Custom Admin Scripts -->
+    <script src="~/Scripts/js/scripts.js"></script>
+    <script src="~/Scripts/js/datatables-simple-demo.js"></script>
+    <script src="~/Scripts/admin-common.js"></script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

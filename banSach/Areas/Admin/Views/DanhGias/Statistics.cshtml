@@ -1,0 +1,86 @@
+﻿model dynamic
+
+@{
+    ViewBag.Title = "Thống kê đánh giá";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h2>Thống kê đánh giá sách</h2>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">Quay lại danh sách</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Top 20 sách có nhiều đánh giá nhất</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Hình ảnh</th>
+                        <th>Tên sách</th>
+                        <th>Số đánh giá</th>
+                        <th>Điểm trung bình</th>
+                        <th>Đánh giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="~/img/sach/@item.Sach.Hinh" alt="@item.Sach.TenSach" style="width: 60px; height: 80px; object-fit: cover;" />
+                            </td>
+                            <td>@item.Sach.TenSach</td>
+                            <td>
+                                <span class="badge badge-info">@item.SoDanhGia đánh giá</span>
+                            </td>
+                            <td>
+                                @if (item.DiemTrungBinh.HasValue)
+                                {
+                                    <strong>@item.DiemTrungBinh.Value.ToString("0.0")</strong>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.DiemTrungBinh.HasValue)
+                                {
+                                    for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Math.Floor(item.DiemTrungBinh.Value))
+                                        {
+                                            <i class="fa fa-star" style="color: #ffc107;"></i>
+                                        }
+                                        else if (i == Math.Ceiling(item.DiemTrungBinh.Value) && item.DiemTrungBinh.Value % 1 != 0)
+                                        {
+                                            <i class="fa fa-star-half-o" style="color: #ffc107;"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa fa-star-o" style="color: #ddd;"></i>
+                                        }
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        margin-top: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>

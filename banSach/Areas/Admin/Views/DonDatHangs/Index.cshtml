@@ -1,0 +1,435 @@
+﻿@model PagedList.IPagedList<banSach.Models.DonDatHang>
+@using PagedList.Mvc;
+
+@{
+    ViewBag.Title = "Quản lý đơn đặt hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-shopping-cart"></i> Quản lý đơn đặt hàng</h1>
+        <div class="page-actions">
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tạo đơn hàng mới
+            </a>
+        </div>
+    </div>
+
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "HomeAdmin")">Trang chủ</a></li>
+        <li class="breadcrumb-item active">Đơn đặt hàng</li>
+    </ol>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-card-title">Chờ xác nhận</div>
+                <div class="stats-card-value">@Model.Count(d => d.TrangThai == "Chờ xác nhận")</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-info">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <div class="stats-card-title">Đã xác nhận</div>
+                <div class="stats-card-value">@Model.Count(d => d.TrangThai == "Đã xác nhận")</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon" style="background: #9b59b6;">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="stats-card-title">Đang giao hàng</div>
+                <div class="stats-card-value">@Model.Count(d => d.TrangThai == "Đang giao hàng")</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-card-title">Hoàn tất</div>
+                <div class="stats-card-value">@Model.Count(d => d.TrangThai == "Hoàn tất")</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-search"></i> Tìm kiếm và lọc
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "DonDatHangs", FormMethod.Get, new { @class = "row g-3" }))
+            {
+                <div class="col-md-4">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="Tìm theo mã đơn, tên khách..." />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="searchType" class="form-select">
+                        <option value="name" selected="@(ViewBag.CurrentSearchType == "name")">Tìm theo tên</option>
+                        <option value="id" selected="@(ViewBag.CurrentSearchType == "id")">Tìm theo mã</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="statusFilter" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="Chờ xác nhận" selected="@(ViewBag.StatusFilter == "Chờ xác nhận")">Chờ xác nhận</option>
+                        <option value="Đã xác nhận" selected="@(ViewBag.StatusFilter == "Đã xác nhận")">Đã xác nhận</option>
+                        <option value="Đang giao hàng" selected="@(ViewBag.StatusFilter == "Đang giao hàng")">Đang giao hàng</option>
+                        <option value="Hoàn tất" selected="@(ViewBag.StatusFilter == "Hoàn tất")">Hoàn tất</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary w-100">
+                        <i class="fas fa-redo"></i> Đặt lại
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table"></i> Danh sách đơn đặt hàng
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn hàng</th>
+                            <th>Khách hàng</th>
+                            <th>Email</th>
+                            <th>Địa chỉ</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            // ✅ Sử dụng TongTien từ database (đã bao gồm phí ship và mã giảm giá)
+                            decimal tongTien;
+                            if (item.TongTien.HasValue && item.TongTien.Value > 0)
+                            {
+                                tongTien = item.TongTien.Value;
+                            }
+                            else
+                            {
+                                // Fallback: Tính lại cho đơn hàng cũ
+                                var tienHang = item.ChiTietDonHangs.Sum(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0));
+                                var phiShip = item.PhiVanChuyen ?? 0;
+                                tongTien = tienHang + phiShip;
+                            }
+
+                            <tr>
+                                <td data-label="Mã đơn hàng">
+                                    <strong>@item.MaDonHang</strong>
+                                </td>
+                                <td data-label="Khách hàng">
+                                    @item.HoTen<br />
+                                    <small class="text-muted">
+                                        <i class="fas fa-phone"></i> @item.SoDienThoai
+                                    </small>
+                                </td>
+                                <td data-label="Email">
+                                    <small>@item.Email</small>
+                                </td>
+                                <td data-label="Địa chỉ">
+                                    <small>@item.DiaChi</small>
+                                </td>
+                                <td data-label="Ngày đặt">
+                                    @(item.NgayDat?.ToString("dd/MM/yyyy") ?? "")
+                                </td>
+                                <td data-label="Tổng tiền">
+                                    <strong class="text-primary">@String.Format("{0:#,##0}₫", tongTien)</strong>
+                                </td>
+                                <td data-label="Trạng thái">
+                                    @if (item.TrangThai == "Chờ xác nhận")
+                                    {
+                                        using (Html.BeginForm("CapNhatTrangThai", "DonDatHangs", FormMethod.Post, new { @class = "d-flex" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            @Html.Hidden("maDonHang", item.MaDonHang)
+
+                                            <select name="trangThai" class="form-select form-select-sm me-2" style="color: #f39c12;">
+                                                <option value="Chờ xác nhận" selected>Chờ xác nhận</option>
+                                                <option value="Đã xác nhận">Đã xác nhận</option>
+                                            </select>
+
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        }
+                                    }
+                                    else if (item.TrangThai == "Đã xác nhận")
+                                    {
+                                        using (Html.BeginForm("CapNhatTrangThai", "DonDatHangs", FormMethod.Post, new { @class = "d-flex" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            @Html.Hidden("maDonHang", item.MaDonHang)
+
+                                            <select name="trangThai" class="form-select form-select-sm me-2" style="color: #3498db;">
+                                                <option value="Đã xác nhận" selected>Đã xác nhận</option>
+                                                <option value="Đang giao hàng">Đang giao hàng</option>
+                                            </select>
+
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        }
+                                    }
+                                    else if (item.TrangThai == "Đang giao hàng")
+                                    {
+                                        using (Html.BeginForm("CapNhatTrangThai", "DonDatHangs", FormMethod.Post, new { @class = "d-flex" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            @Html.Hidden("maDonHang", item.MaDonHang)
+
+                                            <select name="trangThai" class="form-select form-select-sm me-2" style="color: #9b59b6;">
+                                                <option value="Đang giao hàng" selected>Đang giao hàng</option>
+                                                <option value="Hoàn tất">Hoàn tất</option>
+                                            </select>
+
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        }
+                                    }
+                                    else if (item.TrangThai == "Hoàn tất")
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle"></i> Hoàn tất
+                                        </span>
+                                    }
+                                    else if (item.TrangThai == "Đã hủy")
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle"></i> Đã hủy
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.TrangThai</span>
+                                    }
+                                </td>
+                                <td data-label="Thao tác">
+                                    <div class="btn-group" role="group">
+                                        <a href="@Url.Action("Details", new { id = item.MaDonHang })" class="btn btn-sm btn-outline-info" title="Chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="@Url.Action("Edit", new { id = item.MaDonHang })" class="btn btn-sm btn-outline-primary" title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        <a href="@Url.Action("Delete", new { id = item.MaDonHang })"
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Xóa"
+                                           onclick="return confirm('Bạn có chắc muốn xóa sách này?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        <a href="@Url.Action("Invoice", new { id = item.MaDonHang })" class="btn btn-sm btn-outline-success" title="In hóa đơn">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-3">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new
+                {
+                    page,
+                    searchString = ViewBag.CurrentFilter,
+                    searchType = ViewBag.CurrentSearchType,
+                    statusFilter = ViewBag.StatusFilter
+                }), new PagedListRenderOptions
+                {
+                    DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                    DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                    DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                    DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                    LinkToFirstPageFormat = "<<",
+                    LinkToPreviousPageFormat = "<",
+                    LinkToNextPageFormat = ">",
+                    LinkToLastPageFormat = ">>",
+                    UlElementClasses = new[] { "pagination" },
+                    LiElementClasses = new[] { "page-item" }
+                })
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .stats-card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .stats-card-title {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .stats-card-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .search-box input {
+            padding-left: 35px;
+        }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .btn-group .btn {
+        padding: 6px 12px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+    .page-actions .btn {
+        margin-left: 10px;
+    }
+
+    /* Pagination styling */
+    .pagination {
+        display: flex;
+        padding-left: 0;
+        list-style: none;
+        border-radius: 0.25rem;
+    }
+
+    .page-item:first-child .page-link {
+        border-top-left-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+    }
+
+    .page-item:last-child .page-link {
+        border-top-right-radius: 0.25rem;
+        border-bottom-right-radius: 0.25rem;
+    }
+
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+
+    .page-link {
+        position: relative;
+        display: block;
+        padding: 0.375rem 0.75rem;
+        margin-left: -1px;
+        line-height: 1.25;
+        color: #0d6efd;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        text-decoration: none;
+    }
+
+        .page-link:hover {
+            z-index: 2;
+            color: #0a58ca;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .page-link:focus {
+            z-index: 3;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+</style>

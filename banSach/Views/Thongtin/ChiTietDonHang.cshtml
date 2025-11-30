@@ -1,0 +1,880 @@
+﻿@model List<banSach.Models.ChiTietDonHang>
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var donHang = ViewBag.DonHang as banSach.Models.DonDatHang;
+}
+
+@helper GetPhuongThucThanhToan(int? phuongThuc)
+{
+    switch (phuongThuc)
+    {
+        case 1:
+            @:Thanh toán khi nhận hàng (COD)
+            break;
+        case 2:
+            @:Thanh toán qua VNPay
+            break;
+        case 3:
+            @:Thanh toán qua Momo
+            break;
+        case 4:
+            @:Chuyển khoản ngân hàng
+            break;
+        default:
+            @:Chưa xác định
+            break;
+    }
+}
+
+<div class="order-detail-container">
+    <div class="container py-5">
+        <!-- Back Button & Header -->
+        <div class="order-detail-header">
+            <a href="@Url.Action("Index", "Thongtin")" class="btn-back-detail">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <div class="order-title-section">
+                <h2>Chi tiết đơn hàng</h2>
+                <p class="order-id-large">
+                    <i class="fas fa-receipt"></i> @ViewBag.MaDonHang
+                </p>
+            </div>
+        </div>
+
+        @if (donHang != null && donHang.ThanhToans.Any(tt => tt.TrangThaiThanhToan == "Đã thanh toán"))
+        {
+            <div class="payment-alert success">
+                <div class="alert-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="alert-content">
+                    <h5>Thanh toán thành công</h5>
+                    <p>Đơn hàng của bạn đã được ghi nhận với trạng thái <strong>Đã thanh toán</strong>. Bạn có thể theo dõi quá trình giao hàng bên dưới.</p>
+                </div>
+            </div>
+        }
+
+        <!-- Status Timeline -->
+        <div class="status-timeline-card">
+            <div class="timeline-container">
+                <div class="timeline-step @(ViewBag.TrangThai == "Chờ xác nhận" || ViewBag.TrangThai == "Đã xác nhận" || ViewBag.TrangThai == "Đang giao hàng" || ViewBag.TrangThai == "Hoàn tất" ? "completed" : "")">
+                    <div class="timeline-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h5>Chờ xác nhận</h5>
+                        <p>Đơn hàng đang chờ xác nhận</p>
+                    </div>
+                </div>
+                <div class="timeline-line @(ViewBag.TrangThai == "Đã xác nhận" || ViewBag.TrangThai == "Đang giao hàng" || ViewBag.TrangThai == "Hoàn tất" ? "completed" : "")"></div>
+                <div class="timeline-step @(ViewBag.TrangThai == "Đã xác nhận" || ViewBag.TrangThai == "Đang giao hàng" || ViewBag.TrangThai == "Hoàn tất" ? "completed" : "")">
+                    <div class="timeline-icon">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h5>Đã xác nhận</h5>
+                        <p>Đơn hàng đã được xác nhận</p>
+                    </div>
+                </div>
+                <div class="timeline-line @(ViewBag.TrangThai == "Đang giao hàng" || ViewBag.TrangThai == "Hoàn tất" ? "completed" : "")"></div>
+                <div class="timeline-step @(ViewBag.TrangThai == "Đang giao hàng" || ViewBag.TrangThai == "Hoàn tất" ? "completed" : "")">
+                    <div class="timeline-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h5>Đang giao hàng</h5>
+                        <p>Đơn hàng đang được vận chuyển</p>
+                    </div>
+                </div>
+                <div class="timeline-line @(ViewBag.TrangThai == "Hoàn tất" ? "completed" : "")"></div>
+                <div class="timeline-step @(ViewBag.TrangThai == "Hoàn tất" ? "completed" : "")">
+                    <div class="timeline-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h5>Hoàn tất</h5>
+                        <p>Đơn hàng đã được giao thành công</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Products List -->
+            <div class="col-lg-8">
+                <div class="products-card">
+                    <div class="products-header">
+                        <h4><i class="fas fa-box"></i> Sản phẩm đã đặt</h4>
+                        <span class="product-count">@Model.Count sản phẩm</span>
+                    </div>
+                    <div class="products-list">
+                        @foreach (var item in Model)
+                        {
+                            <div class="product-item-detail">
+                                <div class="product-image-detail">
+                                    <img src="~/img/sach/@item.Sach.Hinh" alt="@item.Sach.TenSach" />
+                                </div>
+                                <div class="product-info-detail">
+                                    <h5 class="product-name-detail">@item.Sach.TenSach</h5>
+                                    @if (item.Sach.VietSaches.Any())
+                                    {
+                                        <p class="product-author">
+                                            <i class="fas fa-user-edit"></i>
+                                            @string.Join(", ", item.Sach.VietSaches.Select(v => v.TacGia.TenTG))
+                                        </p>
+                                    }
+                                    <div class="product-quantity-price">
+                                        <span class="quantity-badge">
+                                            <i class="fas fa-boxes"></i> Số lượng: <strong>@item.SoLuong</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="product-total-price">
+                                    @String.Format("{0:#,##0}₫", (item.SoLuong ?? 0) * (item.DonGia ?? 0))
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <!-- Customer Info -->
+                <div class="info-card">
+                    <div class="info-header">
+                        <h4><i class="fas fa-user"></i> Thông tin người nhận</h4>
+                    </div>
+                    <div class="info-body">
+                        <div class="info-item">
+                            <i class="fas fa-user-circle"></i>
+                            <div class="info-text">
+                                <label>Họ tên</label>
+                                <span>@donHang.HoTen</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <div class="info-text">
+                                <label>Số điện thoại</label>
+                                <span>@donHang.SoDienThoai</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <div class="info-text">
+                                <label>Email</label>
+                                <span>@donHang.Email</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="info-text">
+                                <label>Địa chỉ giao hàng</label>
+                                <span>@donHang.DiaChi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Info -->
+                <div class="info-card mt-4">
+                    <div class="info-header">
+                        <h4><i class="fas fa-credit-card"></i> Thanh toán</h4>
+                    </div>
+                    <div class="info-body">
+                        <div class="payment-row">
+                            <span>Phương thức</span>
+                            <strong>@GetPhuongThucThanhToan(donHang.PhuongThucThanhToan)</strong>
+                        </div>
+                        <div class="payment-row">
+                            <span>Ngày đặt</span>
+                            <strong>@(ViewBag.NgayDat?.ToString("dd/MM/yyyy HH:mm") ?? "")</strong>
+                        </div>
+                        <div class="payment-row">
+                            <span>Trạng thái đơn hàng</span>
+                            @if (ViewBag.TrangThai == "Chờ xác nhận")
+                            {
+                                <span class="status-badge-detail pending">
+                                    <i class="fas fa-clock"></i> Chờ xác nhận
+                                </span>
+                            }
+                            else if (ViewBag.TrangThai == "Đã xác nhận")
+                            {
+                                <span class="status-badge-detail confirmed">
+                                    <i class="fas fa-check-double"></i> Đã xác nhận
+                                </span>
+                            }
+                            else if (ViewBag.TrangThai == "Đang giao hàng")
+                            {
+                                <span class="status-badge-detail shipping">
+                                    <i class="fas fa-shipping-fast"></i> Đang giao hàng
+                                </span>
+                            }
+                            else if (ViewBag.TrangThai == "Hoàn tất")
+                            {
+                                <span class="status-badge-detail completed">
+                                    <i class="fas fa-check-circle"></i> Hoàn tất
+                                </span>
+                            }
+                            else if (ViewBag.TrangThai == "Đã hủy")
+                            {
+                                <span class="status-badge-detail cancelled">
+                                    <i class="fas fa-times-circle"></i> Đã hủy
+                                </span>
+                            }
+                        </div>
+                        @{
+                            var thanhToan = donHang.ThanhToans.FirstOrDefault();
+                            if (thanhToan != null)
+                            {
+                                <div class="payment-row">
+                                    <span>Trạng thái thanh toán</span>
+                                    @if (thanhToan.TrangThaiThanhToan == "Đã thanh toán")
+                                    {
+                                        <span class="status-badge-detail paid">
+                                            <i class="fas fa-check-circle"></i> Đã thanh toán
+                                        </span>
+                                    }
+                                    else if (thanhToan.TrangThaiThanhToan == "Chờ thanh toán")
+                                    {
+                                        <span class="status-badge-detail pending-payment">
+                                            <i class="fas fa-clock"></i> Chờ thanh toán
+                                        </span>
+                                    }
+                                    else if (thanhToan.TrangThaiThanhToan == "Thất bại")
+                                    {
+                                        <span class="status-badge-detail failed">
+                                            <i class="fas fa-times"></i> Thất bại
+                                        </span>
+                                    }
+                                </div>
+                                if (!string.IsNullOrEmpty(thanhToan.MaGiaoDich))
+                                {
+                                    <div class="payment-row">
+                                        <span>Mã giao dịch</span>
+                                        <strong class="text-muted small">@thanhToan.MaGiaoDich</strong>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Price Summary -->
+                <div class="price-summary-card">
+                    <div class="price-row">
+                        <span>Tạm tính</span>
+                        <span>@String.Format("{0:#,##0}₫", Model.Sum(item => (item.SoLuong ?? 0) * (item.DonGia ?? 0)))</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Phí vận chuyển</span>
+                        @if (donHang.PhiVanChuyen.HasValue && donHang.PhiVanChuyen.Value > 0)
+                        {
+                            <span>@String.Format("{0:#,##0}₫", donHang.PhiVanChuyen)</span>
+                        }
+                        else
+                        {
+                            <span class="free-shipping">Miễn phí</span>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(donHang.MaGiamGia))
+                    {
+                        var suDungMGG = ViewBag.SuDungMaGiamGia as banSach.Models.SuDungMaGiamGia;
+                        if (suDungMGG != null)
+                        {
+                            <div class="price-row discount">
+                                <span>
+                                    <i class="fas fa-tag"></i> Giảm giá (@donHang.MaGiamGia)
+                                </span>
+                                <span class="discount-amount">-@String.Format("{0:#,##0}₫", suDungMGG.SoTienGiam)</span>
+                            </div>
+                        }
+                    }
+                    <div class="price-divider"></div>
+                    <div class="price-row total">
+                        <span>Tổng cộng</span>
+                        @if (donHang.TongTien.HasValue)
+                        {
+                            <span class="total-amount">@String.Format("{0:#,##0}₫", donHang.TongTien)</span>
+                        }
+                        else
+                        {
+                            <span class="total-amount">@String.Format("{0:#,##0}₫", ViewBag.TongTien)</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                @if (ViewBag.TrangThai == "Chờ xác nhận")
+                {
+                    <div class="action-buttons">
+                        <a href="@Url.Action("HuyDonHang", new { id = ViewBag.MaDonHang })" class="btn-cancel-order" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                            <i class="fas fa-times-circle"></i> Hủy đơn hàng
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-green: #2ecc71;
+        --dark-green: #27ae60;
+        --light-green: #a8e6cf;
+        --pale-green: #f0fff4;
+        --orange: #f39c12;
+        --blue: #3498db;
+        --red: #e74c3c;
+        --text-dark: #2c3e50;
+        --text-muted: #7f8c8d;
+    }
+
+    .order-detail-container {
+        background: linear-gradient(135deg, var(--pale-green) 0%, #e8f8f5 100%);
+        min-height: 100vh;
+        padding: 30px 0;
+    }
+
+    .order-detail-header {
+        background: white;
+        border-radius: 20px;
+        padding: 30px 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(46, 204, 113, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .btn-back-detail {
+        background: var(--primary-green);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-back-detail:hover {
+            background: var(--dark-green);
+            transform: translateX(-5px);
+            color: white;
+        }
+
+    .order-title-section h2 {
+        margin: 0 0 8px 0;
+        color: var(--text-dark);
+        font-size: 28px;
+    }
+
+    .order-id-large {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .order-id-large i {
+            color: var(--primary-green);
+        }
+
+    .payment-alert {
+        display: flex;
+        gap: 15px;
+        background: white;
+        border-radius: 16px;
+        padding: 20px 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 20px rgba(46, 204, 113, 0.1);
+        border-left: 6px solid var(--primary-green);
+        align-items: center;
+    }
+
+    .payment-alert.success {
+        border-left-color: var(--dark-green);
+    }
+
+    .alert-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--pale-green);
+        color: var(--dark-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+
+    .alert-content h5 {
+        margin: 0 0 5px 0;
+        color: var(--dark-green);
+        font-size: 18px;
+    }
+
+    .alert-content p {
+        margin: 0;
+        color: var(--text-muted);
+    }
+
+    /* Status Timeline */
+    .status-timeline-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(46, 204, 113, 0.1);
+    }
+
+    .timeline-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+    }
+
+    .timeline-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        z-index: 2;
+    }
+
+    .timeline-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #ecf0f1;
+        color: #95a5a6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .timeline-step.completed .timeline-icon {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        color: white;
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+    }
+
+    .timeline-content {
+        text-align: center;
+    }
+
+        .timeline-content h5 {
+            margin: 0 0 5px 0;
+            color: var(--text-dark);
+            font-size: 16px;
+        }
+
+    .timeline-step.completed .timeline-content h5 {
+        color: var(--primary-green);
+    }
+
+    .timeline-content p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+
+    .timeline-line {
+        position: absolute;
+        top: 30px;
+        height: 4px;
+        background: #ecf0f1;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+
+        .timeline-line:nth-of-type(2) {
+            left: 16%;
+            width: 18%;
+        }
+
+        .timeline-line:nth-of-type(4) {
+            left: 41%;
+            width: 18%;
+        }
+
+        .timeline-line:nth-of-type(6) {
+            right: 16%;
+            width: 18%;
+        }
+
+        .timeline-line.completed {
+            background: var(--primary-green);
+        }
+
+    /* Products Card */
+    .products-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(46, 204, 113, 0.1);
+        overflow: hidden;
+    }
+
+    .products-header {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        color: white;
+        padding: 25px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .products-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .product-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+
+    .products-list {
+        padding: 30px;
+    }
+
+    .product-item-detail {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        background: var(--pale-green);
+        border: 2px solid var(--light-green);
+        border-radius: 15px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+
+        .product-item-detail:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.2);
+        }
+
+    .product-image-detail {
+        width: 100px;
+        height: 140px;
+        border-radius: 10px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+        .product-image-detail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .product-info-detail {
+        flex: 1;
+    }
+
+    .product-name-detail {
+        margin: 0 0 8px 0;
+        color: var(--text-dark);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .product-author {
+        margin: 0 0 12px 0;
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+
+        .product-author i {
+            color: var(--primary-green);
+            margin-right: 5px;
+        }
+
+    .product-quantity-price {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .quantity-badge {
+        background: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text-dark);
+    }
+
+        .quantity-badge i {
+            color: var(--primary-green);
+            margin-right: 5px;
+        }
+
+    .unit-price {
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+
+    .product-total-price {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--primary-green);
+        align-self: center;
+    }
+
+    /* Info Card */
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(46, 204, 113, 0.1);
+        overflow: hidden;
+    }
+
+    .info-header {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        color: white;
+        padding: 20px 25px;
+    }
+
+        .info-header h4 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+    .info-body {
+        padding: 25px;
+    }
+
+    .info-item {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-item > i {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--pale-green);
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+    .info-text {
+        flex: 1;
+    }
+
+        .info-text label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .info-text span {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+    .payment-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px dashed #e0e0e0;
+    }
+
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-row span:first-child {
+            color: var(--text-muted);
+        }
+
+        .payment-row strong {
+            text-align: right;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+    .status-badge-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+        .status-badge-detail.pending {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--orange);
+        }
+
+        .status-badge-detail.confirmed {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--blue);
+        }
+
+        .status-badge-detail.shipping {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--blue);
+        }
+
+        .status-badge-detail.completed {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--dark-green);
+        }
+
+        .status-badge-detail.cancelled {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--red);
+        }
+
+        .status-badge-detail.paid {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--dark-green);
+        }
+
+        .status-badge-detail.pending-payment {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--orange);
+        }
+
+        .status-badge-detail.failed {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--red);
+        }
+
+    /* Price Summary */
+    .price-summary-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-top: 20px;
+        box-shadow: 0 5px 20px rgba(46, 204, 113, 0.1);
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        color: var(--text-dark);
+    }
+
+        .price-row.total {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .price-row.discount {
+            color: var(--red);
+        }
+
+            .price-row.discount i {
+                margin-right: 5px;
+            }
+
+    .discount-amount {
+        font-weight: 600;
+        color: var(--red);
+    }
+
+    .total-amount {
+        color: var(--primary-green);
+    }
+
+    .free-shipping {
+        color: var(--primary-green);
+        font-weight: 600;
+    }
+
+    .price-divider {
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--light-green), transparent);
+        margin: 15px 0;
+    }
+
+    /* Actions */
+    .action-buttons {
+        margin-top: 20px;
+    }
+
+    .btn-cancel-order {
+        display: block;
+        width: 100%;
+        background: var(--red);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-cancel-order:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+            color: white;
+        }
+
+    @@media (max-width: 768px) {
+        .order-detail-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .timeline-container {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-line {
+            display: none;
+        }
+
+        .timeline-step {
+            flex-direction: row;
+            width: 100%;
+        }
+
+        .timeline-content {
+            text-align: left;
+        }
+
+        .product-item-detail {
+            flex-direction: column;
+        }
+
+        .product-total-price {
+            align-self: flex-start;
+        }
+    }
+</style>

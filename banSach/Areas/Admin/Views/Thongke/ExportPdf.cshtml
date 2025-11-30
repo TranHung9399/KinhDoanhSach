@@ -1,0 +1,35 @@
+@model banSach.Models.ThongKe
+@{
+    Layout = null;
+}
+<h2 style="text-align:center;">BÁO CÁO DOANH THU</h2>
+<p style="text-align:center;">Từ: @Model.NgayBatDau.ToString("dd/MM/yyyy") đến: @Model.NgayKetThuc.ToString("dd/MM/yyyy")</p>
+<p style="text-align:center;">Thống kê theo: @(Model.LoaiThongKe == "ngay" ? "Ngày" : (Model.LoaiThongKe == "thang" ? "Tháng" : "Năm"))</p>
+<table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse:collapse;">
+    <thead style="background:#e9ecef;">
+        <tr>
+            <th>@(Model.LoaiThongKe == "ngay" ? "Ngày" : (Model.LoaiThongKe == "thang" ? "Tháng" : "Năm"))</th>
+            <th>Số Đơn Hàng</th>
+            <th>Doanh Thu</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.ChiTiet != null && Model.ChiTiet.Any())
+        {
+            foreach (var chiTiet in Model.ChiTiet)
+            {
+                <tr>
+                    <td>@chiTiet.KhoangThoiGian</td>
+                    <td>@chiTiet.SoDonHang</td>
+                    <td>@String.Format("{0:N0}₫", chiTiet.DoanhThu)</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3" style="text-align:center;">Không có dữ liệu</td>
+            </tr>
+        }
+    </tbody>
+</table> 

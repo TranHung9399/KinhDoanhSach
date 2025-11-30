@@ -1,0 +1,353 @@
+﻿@{
+    ViewBag.Title = "Liên hệ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .contact-page {
+        background: white;
+        color: #333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+    }
+
+    .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .contact-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        margin: 30px 0 20px 20px;
+        text-transform: uppercase;
+    }
+
+    .map-section {
+        width: 100%;
+        height: 400px;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .map-container {
+        width: 100%;
+        height: 100%;
+        border: 1px solid #e9ecef;
+    }
+
+    .map-overlay {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        max-width: 300px;
+        z-index: 1000;
+    }
+
+    .map-overlay h4 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 1rem;
+    }
+
+    .map-overlay p {
+        margin: 5px 0;
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .map-overlay .directions-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .map-overlay .view-map-link {
+        color: #007bff;
+        text-decoration: none;
+        font-size: 0.8rem;
+        display: block;
+        margin-top: 10px;
+    }
+
+    .contact-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        padding: 0 20px 40px 20px;
+    }
+
+    .contact-form {
+        background: white;
+        padding: 30px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+    }
+
+    .contact-form h2 {
+        color: #333;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .contact-form p {
+        color: #666;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #28a745;
+        box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+    }
+
+    .form-group textarea {
+        height: 120px;
+        resize: vertical;
+    }
+
+    .submit-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .submit-btn:hover {
+        background: #218838;
+    }
+
+    .company-info {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .company-info h2 {
+        color: #333;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .company-name-large {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .company-name-vn {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+    }
+
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        background: #28a745;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .contact-details {
+        flex: 1;
+    }
+
+    .contact-details h4 {
+        margin: 0 0 5px 0;
+        color: #333;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .contact-details p {
+        margin: 0;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    media (max-width: 768px) {
+        .contact-section {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 0 15px 20px 15px;
+        }
+
+        .contact-title {
+            font-size: 2rem;
+            margin: 20px 0 15px 15px;
+        }
+
+        .map-section {
+            height: 300px;
+        }
+
+        .map-overlay {
+            max-width: 250px;
+            padding: 10px;
+        }
+    }
+</style>
+
+<div class="contact-page">
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="contact-title">Liên hệ</h1>
+
+        <!-- Google Maps Section -->
+        <div class="map-section">
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3835.738123456789!2d108.2468!3d16.0544!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142184d8b5b5b5b%3A0x5b5b5b5b5b5b5b5b!2sHi%E1%BB%87u%20S%C3%A1ch%20Con%20C%C3%BA%20V%E1%BB%8D!5e0!3m2!1svi!2svn!4v1234567890"
+                        width="100%"
+                        height="100%"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+
+            <!-- Map Overlay -->
+            <div class="map-overlay">
+                <h4>Hiệu Sách Con Cú Vọ</h4>
+                <p>123 Đường ABC</p>
+                <p>123 Đường ABC, Sơn Trà, Đà Nẵng 550000</p>
+                <button class="directions-btn">Chỉ đường</button>
+                <a href="#" class="view-map-link">Xem bản đồ lớn hơn</a>
+            </div>
+        </div>
+
+        <!-- Contact Form and Company Info -->
+        <div class="contact-section">
+            <!-- Contact Form -->
+            <div class="contact-form">
+                <h2>Viết nhận xét</h2>
+                <p>Nếu bạn có thắc mắc gì, có thể gửi yêu cầu cho chúng tôi, và chúng tôi sẽ liên lạc lại với bạn sớm nhất có thể.</p>
+
+                <form action="@Url.Action("SendContact", "Home")" method="post">
+                    <div class="form-group">
+                        <label for="name">Tên của bạn</label>
+                        <input type="text" id="name" name="name" placeholder="Tên của bạn" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email của bạn</label>
+                        <input type="email" id="email" name="email" placeholder="Email của bạn" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Viết bình luận</label>
+                        <textarea id="message" name="message" placeholder="Viết bình luận" required></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Gửi liên hệ</button>
+                </form>
+            </div>
+
+            <!-- Company Information -->
+            <div class="company-info">
+                <h2>Chúng tôi ở đây</h2>
+
+                <div class="company-name-large">Hiệu Sách Con Cú Vọ</div>
+                <div class="company-name-vn">Công ty TNHH Hiệu Sách Con Cú Vọ</div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <div class="contact-details">
+                        <h4>Địa chỉ</h4>
+                        <p>123 Đường ABC, Sơn Trà, Đà Nẵng</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <div class="contact-details">
+                        <h4>Email</h4>
+                        <p>info@hieusachconcuvo.com</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <div class="contact-details">
+                        <h4>Điện thoại</h4>
+                        <p>+84 123 456 789</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>// Handle directions button
+    document.querySelector('.directions-btn').addEventListener('click', function() {
+        window.open('https://www.google.com/maps/dir//123+ABC+Street+Son+Tra+Da+Nang+Vietnam', '_blank');
+    });
+
+    // Handle view larger map link
+    document.querySelector('.view-map-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.open('https://www.google.com/maps/place/123+ABC+Street+Son+Tra+Da+Nang+Vietnam', '_blank');
+    });</script>

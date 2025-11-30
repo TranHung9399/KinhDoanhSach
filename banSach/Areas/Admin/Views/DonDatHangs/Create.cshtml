@@ -1,0 +1,335 @@
+﻿@model banSach.Models.DonDatHang
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<section class="vh-100 gradient-custom">
+    <div class="container py-5 h-100">
+        <div class="row justify-content-center align-items-center h-100">
+            <div class="col-12 col-lg-9 col-xl-7">
+                <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
+                    <div class="card-body p-4 p-md-5">
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Tạo đơn hàng</h3>
+                        @using (Html.BeginForm("Create", "DonDatHangs", FormMethod.Post, new { @id = "orderForm" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="row">
+                                <!-- Thông tin đơn hàng -->
+                                <div class="col-12 mb-4">
+                                    <h4 class="mb-3">Thông tin đơn hàng</h4>
+                                    <div class="form-outline mb-4">
+                                        <label class="form-label fw-bold" for="HoTen">Họ tên</label>
+                                        @Html.EditorFor(model => model.HoTen, new { htmlAttributes = new { @class = "form-control form-control-lg", @id = "HoTen" } })
+                                        @Html.ValidationMessageFor(model => model.HoTen, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <label class="form-label fw-bold" for="SoDienThoai">Số điện thoại</label>
+                                        @Html.EditorFor(model => model.SoDienThoai, new { htmlAttributes = new { @class = "form-control form-control-lg", @id = "SoDienThoai" } })
+                                        @Html.ValidationMessageFor(model => model.SoDienThoai, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <label class="form-label fw-bold" for="Email">Email</label>
+                                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control form-control-lg", @id = "Email" } })
+                                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <label class="form-label fw-bold" for="DiaChi">Địa chỉ</label>
+                                        @Html.EditorFor(model => model.DiaChi, new { htmlAttributes = new { @class = "form-control form-control-lg", @id = "DiaChi" } })
+                                        @Html.ValidationMessageFor(model => model.DiaChi, "", new { @class = "text-danger" })
+                                    </div>
+
+
+                                </div>
+
+                                <!-- Chi tiết đơn hàng -->
+                                <div class="col-12">
+                                    <h4 class="mb-3">Chi tiết đơn hàng</h4>
+                                    <table class="table table-bordered" id="chiTietTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Sách</th>
+                                                <th>Số lượng</th>
+                                                <th>Đơn giá</th>
+                                                <th>Thành tiền</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                    <div class="mt-3">
+                                        <strong>Tổng tiền: </strong><span id="tongTien">0</span> VND
+                                    </div>
+                                    <button type="button" id="addRow" class="btn btn-secondary btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#sachModal">Thêm sách</button>
+                                </div>
+                            </div>
+                            <div class="form-outline mb-4">
+                                <label class="form-label fw-bold" for="PhuongThucThanhToan">Phương thức thanh toán</label>
+                                @Html.DropDownListFor(model => model.PhuongThucThanhToan, new SelectList(
+                                    new List<SelectListItem>
+                                    {
+                                        new SelectListItem { Text = "Thanh toán tiền mặt", Value = "1" },
+                                        new SelectListItem { Text = "Chuyển khoản", Value = "2" }
+                                    }, "Value", "Text"), "-- Chọn phương thức thanh toán --", new { @class = "form-control form-control-lg", @id = "PhuongThucThanhToan" })
+                                @Html.ValidationMessageFor(model => model.PhuongThucThanhToan, "", new { @class = "text-danger" })
+                            </div>
+                            <div id="vietqr-section" class="mt-4" style="display: none;">
+                                <h5 class="fw-bold">Thanh toán bằng VietQR</h5>
+                                <p class="mb-1">Vui lòng quét mã QR để thanh toán:</p>
+                                <img id="vietqr-img" src="" alt="Mã QR VietQR" class="img-fluid mb-2" style="max-width: 300px;" />
+                                <div class="mb-2">
+                                    <strong>Số tiền:</strong> <span id="qr-amount">0</span> VND<br />
+                                    <strong>Nội dung chuyển khoản:</strong> <span id="qr-content">HD000</span><br />
+                                    <strong>Ngân hàng:</strong> BIDV (Ngân hàng Đầu tư và Phát triển Việt Nam)<br />
+                                    <strong>Số tài khoản:</strong> 0123456789<br />
+                                    <strong>Chủ tài khoản:</strong> HL STORE
+                                </div>
+                            </div>
+
+                            <div class="m-auto mt-4 text-center">
+                                <input class="btn btn-primary btn-lg" type="submit" value="Tạo đơn hàng" />
+                                @Html.ActionLink("Quay Về", "Index", null, new { @class = "btn btn-primary btn-lg ms-2" })
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal chọn sách -->
+<div class="modal fade" id="sachModal" tabindex="-1" aria-labelledby="sachModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sachModalLabel">Tìm kiếm sách</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-3">
+                    <label for="searchSach" class="form-label">Tìm kiếm sách</label>
+                    <input type="text" id="searchSach" class="form-control" placeholder="Nhập tên sách..." />
+                    <ul id="sachList" class="list-group mt-2" style="max-height: 150px; overflow-y: auto;"></ul>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="modalSoLuong" class="form-label">Số lượng</label>
+                    <input type="number" id="modalSoLuong" class="form-control" min="1" value="1" required />
+                </div>
+                <div class="form-group mb-3">
+                    <label for="modalDonGia" class="form-label">Đơn giá</label>
+                    <input type="number" id="modalDonGia" class="form-control" step="0.01" readonly />
+                </div>
+                <input type="hidden" id="selectedMaSach" />
+                <input type="hidden" id="selectedTenSach" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="addSachToTable">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let index = 0;
+        const sachList = @Html.Raw(ViewBag.SachListJson); // Book data from ViewBag
+
+        // Log book data for debugging
+        console.log("Danh sách sách (sachList):", sachList);
+
+        // Function to remove Vietnamese diacritics for search
+        function removeDiacritics(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        // Function to calculate and update the total amount
+        function updateTongTien() {
+            let tongTien = 0;
+            $('#chiTietTable tbody tr').each(function () {
+                const soLuong = parseInt($(this).find('td:eq(1)').text().trim());
+                const donGia = parseFloat($(this).find('td:eq(2)').text().trim());
+                const thanhTien = soLuong * donGia;
+                $(this).find('td:eq(3)').text(thanhTien.toLocaleString('vi-VN')); // Display subtotal with formatting
+                tongTien += thanhTien;
+            });
+            $('#tongTien').text(tongTien.toLocaleString('vi-VN')); // Display total with formatting
+        }
+
+        // Clear the list when the modal opens
+        $('#sachModal').on('show.bs.modal', function () {
+            $('#searchSach').val('');
+            $('#modalSoLuong').val(1);
+            $('#modalDonGia').val(0);
+            $('#selectedMaSach').val('');
+            $('#selectedTenSach').val('');
+
+            // Clear the book list initially
+            const sachListUl = $('#sachList');
+            sachListUl.empty();
+
+            // Show a placeholder message when the list is empty
+            sachListUl.append('<li class="list-group-item">Vui lòng nhập tên sách để tìm kiếm</li>');
+
+            // Ensure sachList is available
+            if (!sachList) {
+                console.error("sachList is undefined or null");
+                sachListUl.empty();
+                sachListUl.append('<li class="list-group-item">Lỗi: Không tải được danh sách sách</li>');
+                return;
+            }
+
+            if (sachList.length === 0) {
+                console.warn("sachList is empty");
+                sachListUl.empty();
+                sachListUl.append('<li class="list-group-item">Không có sách nào</li>');
+                return;
+            }
+        });
+
+        // Filter books as the user types
+        $('#searchSach').on('input', function () {
+            const searchTerm = removeDiacritics($(this).val().toLowerCase());
+            console.log("Search term (normalized):", searchTerm);
+
+            const sachListUl = $('#sachList');
+            sachListUl.empty();
+
+            // If the search term is empty, clear the list and show a message
+            if (!searchTerm) {
+                sachListUl.append('<li class="list-group-item">Vui lòng nhập tên sách để tìm kiếm</li>');
+                return;
+            }
+
+            // Filter books based on the search term
+            const filteredSachList = sachList.filter(sach => {
+                const tenSach = sach.TenSach ? removeDiacritics(sach.TenSach.toLowerCase()) : '';
+                return tenSach.includes(searchTerm);
+            });
+
+            console.log("Filtered books:", filteredSachList);
+            displaySachList(filteredSachList);
+        });
+
+        // Display book list in modal
+        function displaySachList(list) {
+            const sachListUl = $('#sachList');
+            sachListUl.empty();
+
+            if (!list || list.length === 0) {
+                sachListUl.append('<li class="list-group-item">Không tìm thấy sách</li>');
+                return;
+            }
+
+            list.forEach(sach => {
+                const li = `
+                    <li class="list-group-item list-group-item-action"
+                        data-masach="${sach.MaSach}"
+                        data-tensach="${sach.TenSach}"
+                        data-giaban="${sach.GiaBan}">
+                        ${sach.TenSach} (Giá: ${sach.GiaBan})
+                    </li>`;
+                sachListUl.append(li);
+            });
+        }
+
+        // Handle book selection
+        $(document).on('click', '#sachList .list-group-item', function () {
+            $('#sachList .list-group-item').removeClass('active');
+            $(this).addClass('active');
+
+            const maSach = $(this).data('masach');
+            const tenSach = $(this).data('tensach');
+            const giaBan = $(this).data('giaban');
+
+            $('#selectedMaSach').val(maSach);
+            $('#selectedTenSach').val(tenSach);
+            $('#modalDonGia').val(giaBan);
+
+            console.log("Selected book:", { maSach, tenSach, giaBan });
+        });
+
+        // Add book to table when clicking "Add" in modal
+        $('#addSachToTable').click(function () {
+            const maSach = $('#selectedMaSach').val();
+            const tenSach = $('#selectedTenSach').val();
+            const soLuong = $('#modalSoLuong').val();
+            const donGia = $('#modalDonGia').val();
+
+            // Validate input
+            if (!maSach || soLuong <= 0) {
+                alert("Vui lòng chọn sách và nhập số lượng hợp lệ!");
+                return;
+            }
+
+            // Add row to table
+            const row = `
+                <tr>
+                    <td>
+                        ${tenSach}
+                        <input type="hidden" name="ChiTietDonHang[${index}].MaSach" value="${maSach}" />
+                    </td>
+                    <td>
+                        ${soLuong}
+                        <input type="hidden" name="ChiTietDonHang[${index}].SoLuong" value="${soLuong}" />
+                    </td>
+                    <td>
+                        ${donGia}
+                        <input type="hidden" name="ChiTietDonHang[${index}].DonGia" value="${donGia}" />
+                    </td>
+                    <td class="thanh-tien">0</td>
+                    <td>
+                        <button type="button" class="btn btn-danger removeRow">Xóa</button>
+                    </td>
+                </tr>`;
+            $('#chiTietTable tbody').append(row);
+            index++;
+
+            // Update totals after adding a row
+            updateTongTien();
+
+            // Close modal
+            $('#sachModal').modal('hide');
+        });
+
+        // Remove row when clicking "Delete"
+        $(document).on('click', '.removeRow', function () {
+            $(this).closest('tr').remove();
+            // Update totals after removing a row
+            updateTongTien();
+        });
+
+        // Theo dõi thay đổi phương thức thanh toán
+        $('#PhuongThucThanhToan').on('change', function () {
+            const selectedValue = $(this).val();
+            const tongTienText = $('#tongTien').text().replace(/\D/g, ''); // Bỏ dấu . và ký tự không phải số
+            const tongTien = parseInt(tongTienText) || 0;
+
+            if (selectedValue === "2") {
+                const maHoaDon = "HD" + new Date().getTime(); // Tạo mã hóa đơn tạm thời bằng timestamp
+
+                // Cập nhật nội dung
+                $('#qr-amount').text(tongTien.toLocaleString('vi-VN'));
+                $('#qr-content').text(maHoaDon);
+
+                // Tạo URL VietQR tạm thời (ví dụ giả lập)
+                const qrURL = `https://img.vietqr.io/image/BIDV-0123456789-compact2.png?amount=${tongTien}&addInfo=${maHoaDon}`;
+                $('#vietqr-img').attr('src', qrURL);
+
+                // Hiện phần QR
+                $('#vietqr-section').slideDown();
+            } else {
+                $('#vietqr-section').slideUp();
+            }
+        });
+
+    </script>
+}

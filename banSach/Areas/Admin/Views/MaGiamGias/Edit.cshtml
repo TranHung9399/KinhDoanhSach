@@ -1,0 +1,224 @@
+﻿@model banSach.Models.MaGiamGia
+
+@{
+    ViewBag.Title = "Chỉnh sửa Mã giảm giá";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    
+    var now = DateTime.Now;
+    var status = "";
+    var statusClass = "";
+    var statusIcon = "";
+    var statusDescription = "";
+
+    if (Model.NgayKetThuc < now)
+    {
+        status = "Đã hết hạn";
+        statusClass = "danger";
+        statusIcon = "ban";
+        statusDescription = "Mã giảm giá này đã hết thời hạn sử dụng";
+    }
+    else if (Model.NgayBatDau > now)
+    {
+        status = "Sắp diễn ra";
+        statusClass = "warning";
+        statusIcon = "clock";
+        statusDescription = "Mã giảm giá chưa đến thời gian áp dụng";
+    }
+    else if ((Model.DaSuDung ?? 0) >= (Model.SoLuongMa ?? 0))
+    {
+        status = "Hết lượt sử dụng";
+        statusClass = "danger";
+        statusIcon = "times-circle";
+        statusDescription = "Mã giảm giá này đã hết số lượng mã";
+    }
+    else
+    {
+        status = "Đang hoạt động";
+        statusClass = "success";
+        statusIcon = "check-circle";
+        statusDescription = "Mã giảm giá đang có thể sử dụng";
+    }
+}
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-edit"></i> Chỉnh sửa Mã giảm giá</h1>
+    </div>
+
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "HomeAdmin")">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index")">Mã giảm giá</a></li>
+        <li class="breadcrumb-item active">Chỉnh sửa</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-ticket-alt"></i> Thông tin mã giảm giá: <strong class="text-info">@Model.MaCode</strong>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("Edit", "MaGiamGias", FormMethod.Post, new { @class = "needs-validation" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+                        @Html.HiddenFor(model => model.MaCode)
+
+                        <div class="row">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-barcode"></i> @Html.DisplayNameFor(model => model.MaCode)
+                                    </label>
+                                    <input type="text" value="@Model.MaCode" class="form-control" disabled />
+                                    <small class="form-text text-muted">Mã code không thể thay đổi</small>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-tag"></i> @Html.DisplayNameFor(model => model.TenChuongTrinh)
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    @Html.EditorFor(model => model.TenChuongTrinh, new { htmlAttributes = new { @class = "form-control", placeholder = "VD: Khuyến mãi mùa hè 2024", required = "required" } })
+                                    @Html.ValidationMessageFor(model => model.TenChuongTrinh, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-percent"></i> @Html.DisplayNameFor(model => model.PhanTramGiam)
+                                    </label>
+                                    @Html.EditorFor(model => model.PhanTramGiam, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", max = "100", placeholder = "VD: 10" } })
+                                    @Html.ValidationMessageFor(model => model.PhanTramGiam, "", new { @class = "text-danger" })
+                                    <small class="form-text text-muted">Phần trăm giảm (0-100%)</small>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-money-bill-wave"></i> @Html.DisplayNameFor(model => model.SoTienGiam)
+                                    </label>
+                                    @Html.EditorFor(model => model.SoTienGiam, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", step = "1000", placeholder = "VD: 50000" } })
+                                    @Html.ValidationMessageFor(model => model.SoTienGiam, "", new { @class = "text-danger" })
+                                    <small class="form-text text-muted">Số tiền giảm cố định (VNĐ)</small>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar-check"></i> @Html.DisplayNameFor(model => model.NgayBatDau)
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    @{
+                                        var ngayBatDau = Model.NgayBatDau.HasValue ? Model.NgayBatDau.Value.ToString("yyyy-MM-ddTHH:mm") : "";
+                                    }
+                                    <input type="datetime-local" name="NgayBatDau" value="@ngayBatDau" class="form-control" required />
+                                    @Html.ValidationMessageFor(model => model.NgayBatDau, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar-times"></i> @Html.DisplayNameFor(model => model.NgayKetThuc)
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    @{
+                                        var ngayKetThuc = Model.NgayKetThuc.HasValue ? Model.NgayKetThuc.Value.ToString("yyyy-MM-ddTHH:mm") : "";
+                                    }
+                                    <input type="datetime-local" name="NgayKetThuc" value="@ngayKetThuc" class="form-control" required />
+                                    @Html.ValidationMessageFor(model => model.NgayKetThuc, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-users"></i> @Html.DisplayNameFor(model => model.SoLuongMa)
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    @Html.EditorFor(model => model.SoLuongMa, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1", placeholder = "VD: 100", required = "required" } })
+                                    @Html.ValidationMessageFor(model => model.SoLuongMa, "", new { @class = "text-danger" })
+                                    <small class="form-text text-muted">Số lượng mã có thể sử dụng</small>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-check-circle"></i> @Html.DisplayNameFor(model => model.DaSuDung)
+                                    </label>
+                                    @Html.EditorFor(model => model.DaSuDung, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0" } })
+                                    @Html.ValidationMessageFor(model => model.DaSuDung, "", new { @class = "text-danger" })
+                                    <small class="form-text text-muted">Số lượng đã sử dụng</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-@statusClass mt-3" role="alert">
+                            <i class="fas fa-@statusIcon"></i>
+                            <strong>Trạng thái hiện tại:</strong> @status
+                        </div>
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Lưu ý:</strong> Chỉ nên điền một trong hai: Phần trăm giảm HOẶC Số tiền giảm.
+                            Nếu điền cả hai, hệ thống sẽ ưu tiên áp dụng Phần trăm giảm.
+                        </div>
+
+                        <hr />
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Lưu thay đổi
+                            </button>
+                            <a href="@Url.Action("Details", new { id = Model.MaCode })" class="btn btn-info btn-lg">
+                                <i class="fas fa-eye"></i> Xem chi tiết
+                            </a>
+                            <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            // Validate date range
+            $('form').submit(function (e) {
+                var startDate = new Date($('input[name="NgayBatDau"]').val());
+                var endDate = new Date($('input[name="NgayKetThuc"]').val());
+
+                if (endDate <= startDate) {
+                    e.preventDefault();
+                    alert('Ngày kết thúc phải sau ngày bắt đầu!');
+                    return false;
+                }
+
+                // Validate at least one discount value
+                var phanTramGiam = $('input[name="PhanTramGiam"]').val();
+                var soTienGiam = $('input[name="SoTienGiam"]').val();
+
+                if (!phanTramGiam && !soTienGiam) {
+                    e.preventDefault();
+                    alert('Vui lòng nhập Phần trăm giảm hoặc Số tiền giảm!');
+                    return false;
+                }
+
+                // Validate used count
+                var daSuDung = parseInt($('input[name="DaSuDung"]').val()) || 0;
+                var soLuongMa = parseInt($('input[name="SoLuongMa"]').val()) || 0;
+
+                if (daSuDung > soLuongMa) {
+                    e.preventDefault();
+                    alert('Số lượng đã sử dụng không thể lớn hơn tổng số lượng mã!');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

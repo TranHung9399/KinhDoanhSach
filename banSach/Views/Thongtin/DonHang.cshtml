@@ -1,0 +1,441 @@
+﻿@model PagedList.IPagedList<banSach.Models.DonDatHang>
+@using PagedList.Mvc;
+
+@{
+    var tongTienDict = ViewBag.TongTienDict as Dictionary<string, decimal>;
+}
+<link rel="stylesheet" href="@Url.Content("~/css/phantrang.css")" />
+
+@if (Model != null && Model.Any())
+{
+    <div class="orders-list">
+        @foreach (var order in Model)
+        {
+            var tongTien = tongTienDict != null && tongTienDict.ContainsKey(order.MaDonHang)
+                ? tongTienDict[order.MaDonHang]
+                : 0;
+
+            <div class="order-item-mini">
+                <div class="order-header-mini">
+                    <div class="order-id-mini">
+                        <i class="fas fa-receipt"></i>
+                        <strong>@order.MaDonHang</strong>
+                    </div>
+                    <div class="order-date-mini">
+                        <i class="fas fa-calendar-alt"></i>
+                        @(order.NgayDat?.ToString("dd/MM/yyyy") ?? "")
+                    </div>
+                </div>
+
+                <div class="order-status-row">
+                    @if (order.TrangThai == "Chờ xác nhận")
+                    {
+                        <span class="status-badge-mini pending">
+                            <i class="fas fa-clock"></i> Chờ xác nhận
+                        </span>
+                    }
+                    else if (order.TrangThai == "Đã xác nhận")
+                    {
+                        <span class="status-badge-mini confirmed">
+                            <i class="fas fa-check-double"></i> Đã xác nhận
+                        </span>
+                    }
+                    else if (order.TrangThai == "Đang giao hàng")
+                    {
+                        <span class="status-badge-mini shipping">
+                            <i class="fas fa-shipping-fast"></i> Đang giao hàng
+                        </span>
+                    }
+                    else if (order.TrangThai == "Hoàn tất")
+                    {
+                        <span class="status-badge-mini completed">
+                            <i class="fas fa-check-circle"></i> Hoàn tất
+                        </span>
+                    }
+                    else if (order.TrangThai == "Đã hủy")
+                    {
+                        <span class="status-badge-mini cancelled">
+                            <i class="fas fa-times-circle"></i> Đã hủy
+                        </span>
+                    }
+                </div>
+
+                <div class="order-products-mini">
+                    @foreach (var item in order.ChiTietDonHangs.Take(2))
+                    {
+                        <div class="product-mini">
+                            <img src="~/img/sach/@item.Sach.Hinh" alt="@item.Sach.TenSach" />
+                            <div class="product-info-mini">
+                                <p class="product-name-mini">@item.Sach.TenSach</p>
+                                <p class="product-quantity-mini">@item.SoLuong</p>
+                            </div>
+                        </div>
+                    }
+                    @if (order.ChiTietDonHangs.Count > 2)
+                    {
+                        <div class="more-products-mini">
+                            <i class="fas fa-ellipsis-h"></i> +@(order.ChiTietDonHangs.Count - 2) sản phẩm khác
+                        </div>
+                    }
+                </div>
+
+                <div class="order-footer-mini">
+                    <div class="order-total-mini">
+                        <span>Tổng tiền:</span>
+                        <strong>@String.Format("{0:#,##0}₫", tongTien)</strong>
+                    </div>
+                    <div class="order-actions-mini">
+                        <a href="@Url.Action("ChiTietDonHang", "Thongtin", new { id = order.MaDonHang })" class="btn-view-mini">
+                            <i class="fas fa-eye"></i> Chi tiết
+                        </a>
+                        @if (order.TrangThai == "Chờ xác nhận")
+                        {
+                            <a href="@Url.Action("HuyDonHang", "Thongtin", new { id = order.MaDonHang })" class="btn-cancel-mini" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-wrapper">
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }) + "#donhang",
+                  new PagedListRenderOptions
+                  {
+                      DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                      DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                      DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                      DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                      MaximumPageNumbersToDisplay = 5,
+                      UlElementClasses = new[] { "pagination" },
+                      LiElementClasses = new[] { "page-item" },
+                  })
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="fas fa-shopping-bag"></i>
+        <h5>Chưa có đơn hàng nào</h5>
+        <p>Hãy mua sắm ngay để nhận được những ưu đãi tốt nhất!</p>
+        <a href="@Url.Action("Index", "Home")" class="btn-primary-custom">
+            <i class="fas fa-shopping-cart"></i> Mua sắm ngay
+        </a>
+    </div>
+}
+
+    <style>
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .order-item-mini {
+            background: var(--pale-green);
+            border: 2px solid var(--light-green);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+            .order-item-mini:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(46, 204, 113, 0.2);
+            }
+
+        .order-header-mini {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--light-green);
+        }
+
+        .order-id-mini, .order-date-mini {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dark);
+        }
+
+            .order-id-mini i, .order-date-mini i {
+                color: var(--primary-green);
+            }
+
+        .order-status-row {
+            margin-bottom: 15px;
+        }
+
+        .status-badge-mini {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+            .status-badge-mini.pending {
+                background: rgba(243, 156, 18, 0.15);
+                color: #f39c12;
+            }
+
+            .status-badge-mini.confirmed {
+                background: rgba(243, 156, 18, 0.15);
+                color: #f39c12;
+            }
+
+            .status-badge-mini.shipping {
+                background: rgba(52, 152, 219, 0.15);
+                color: #3498db;
+            }
+
+            .status-badge-mini.completed {
+                background: rgba(46, 204, 113, 0.15);
+                color: var(--dark-green);
+            }
+
+            .status-badge-mini.cancelled {
+                background: rgba(231, 76, 60, 0.15);
+                color: #e74c3c;
+            }
+
+        .order-products-mini {
+            margin-bottom: 15px;
+        }
+
+        .product-mini {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+            .product-mini img {
+                width: 50px;
+                height: 65px;
+                object-fit: cover;
+                border-radius: 6px;
+            }
+
+        .product-info-mini {
+            flex: 1;
+        }
+
+        .product-name-mini {
+            margin: 0 0 5px 0;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .product-quantity-mini {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .more-products-mini {
+            text-align: center;
+            padding: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .order-footer-mini {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px dashed var(--light-green);
+        }
+
+        .order-total-mini {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+            .order-total-mini span {
+                color: var(--text-muted);
+                font-size: 13px;
+            }
+
+            .order-total-mini strong {
+                color: var(--primary-green);
+                font-size: 20px;
+            }
+
+        .order-actions-mini {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-view-mini, .btn-cancel-mini {
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view-mini {
+            background: var(--primary-green);
+            color: white;
+        }
+
+            .btn-view-mini:hover {
+                background: var(--dark-green);
+                transform: translateY(-2px);
+            }
+
+        .btn-cancel-mini {
+            background: #e74c3c;
+            color: white;
+        }
+
+            .btn-cancel-mini:hover {
+                background: #c0392b;
+                transform: translateY(-2px);
+            }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+            .empty-state i {
+                font-size: 80px;
+                color: var(--light-green);
+                margin-bottom: 20px;
+            }
+
+            .empty-state h5 {
+                color: var(--text-dark);
+                margin-bottom: 10px;
+            }
+
+            .empty-state p {
+                color: var(--text-muted);
+                margin-bottom: 30px;
+            }
+
+        .btn-primary-custom {
+            display: inline-block;
+            background: var(--primary-green);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+            .btn-primary-custom:hover {
+                background: var(--dark-green);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+            }
+
+        /* Pagination Styles */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 20px 0;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .page-item {
+            display: inline-block;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 8px 12px;
+            background: white;
+            border: 2px solid var(--light-green);
+            border-radius: 8px;
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+            .page-link:hover {
+                background: var(--pale-green);
+                border-color: var(--primary-green);
+                transform: translateY(-2px);
+            }
+
+        .page-item.active .page-link {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+
+        .page-item.disabled .page-link {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        @@media (max-width: 768px) {
+            .order-header-mini {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .order-footer-mini {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .order-actions-mini {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn-view-mini, .btn-cancel-mini {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .pagination-wrapper {
+                margin-top: 20px;
+            }
+
+            .page-link {
+                min-width: 35px;
+                height: 35px;
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+        }
+    </style>

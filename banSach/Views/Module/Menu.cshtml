@@ -1,0 +1,139 @@
+﻿@model List<banSach.Models.Loai>
+
+<div class="sticky-menu">
+    <div class="container1">
+        <nav>
+            <ul class="main-menu" style="margin:0;padding:0;">
+                <li><a href="@Url.Action("Index", "Home")">Trang Chủ</a></li>
+                <li class="dropdown">
+                    <a href="@Url.Action("Index", "Book", null)">Danh mục <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        @foreach (var loai in Model)
+                        {
+                            <li>
+                                <a href="@Url.Action("Index", "Book", new { id = loai.MaLoai })">
+                                    @loai.TenLoai
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+                <li><a href="@Url.Action("#", "Home")">Tin tức</a></li>
+                <li><a href="@Url.Action("Gioithieu", "Home")">Về hiệu sách</a></li>
+                <li><a href="@Url.Action("LienHe", "Home")">Liên hệ</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<style>
+    .sticky-menu {
+        background: #fff !important;
+        position: relative;
+        z-index: 100;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .container1 {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+    }
+    nav {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .main-menu {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 32px; /* tăng/giảm giá trị này để điều chỉnh khoảng cách */
+        margin: 0;
+        padding: 0;
+    }
+    .main-menu > li {
+	    margin: 0 20px 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        min-width: 0;
+    }
+    .main-menu > li > a {
+        color: #000;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        font-size: 15px;
+        padding: 10px 0;
+        transition: color 0.2s, background 0.2s;
+        border-radius: 6px;
+        text-align: center;
+    }
+    .main-menu > li > a:hover {
+        color: #07a54b;
+    }
+    /* Dropdown styles */
+    .main-menu .dropdown .dropdown-menu {
+        display: none;
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        transform: translateX(-50%);
+        background: #fff;
+        min-width: 140px;
+        width: max-content;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+        z-index: 9999;
+        border-radius: 8px;
+        padding: 4px 0;
+        text-align: center;
+    }
+    .main-menu .dropdown:hover > .dropdown-menu,
+    .main-menu .dropdown:focus-within > .dropdown-menu {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: fadeInMenu 0.2s;
+    }
+    keyframes fadeInMenu {
+        from { opacity: 0; transform: translateY(8px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    .main-menu .dropdown-menu li {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .main-menu .dropdown-menu li:not(:last-child) {
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .main-menu .dropdown-menu li a {
+        color: #333;
+        padding: 7px 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        border-radius: 4px;
+        transition: background 0.2s, color 0.2s;
+        text-align: center;
+    }
+    .main-menu .dropdown-menu li a:hover {
+        background: #07a54b;
+        color: #fff;
+    }
+</style>

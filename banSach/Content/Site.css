@@ -1,0 +1,220 @@
+﻿/* Set padding to keep content from hitting the edges */
+.body-content {
+    margin-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+/* --- Overlay tối màu khi mở sidebar --- */
+.like-offcanvas-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1045; /* Cao hơn nút, thấp hơn sidebar */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+    .like-offcanvas-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+/* --- Nút yêu thích trượt theo sidebar --- */
+.like-float-btn {
+    position: fixed;
+    top: 220px;
+    right: 0;
+    background-color: #808080;
+    color: #fff;
+    border-radius: 5px 0 0 5px;
+    padding: 10px 12px;
+    cursor: pointer;
+    z-index: 1046; /* Cao hơn overlay */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.4s ease-in-out;
+    max-width: 45px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+    /* Khi sidebar mở, nút trượt sang trái */
+    .like-float-btn.active {
+        right: 350px; /* Bằng với chiều rộng sidebar */
+    }
+
+    .like-float-btn:hover {
+        max-width: 200px;
+        padding-right: 15px;
+        background-color: #07a54b;
+    }
+
+    .like-float-btn .icon-part {
+        display: inline-block;
+    }
+
+        .like-float-btn .icon-part .bx {
+            font-size: 22px;
+            line-height: 1;
+            display: block;
+        }
+
+    .like-float-btn .text-part {
+        display: inline-block;
+        margin-left: 0;
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .like-float-btn:hover .text-part {
+        margin-left: 10px;
+        opacity: 1;
+    }
+
+/* --- Sidebar offcanvas --- */
+.like-offcanvas {
+    position: fixed;
+    top: 0;
+    right: -350px;
+    width: 350px;
+    height: 100%;
+    background-color: #fff;
+    z-index: 1050; /* Cao nhất */
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    transition: right 0.4s ease-in-out;
+}
+
+    .like-offcanvas.active {
+        right: 0;
+    }
+
+.like-offcanvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+    .like-offcanvas-header h5 {
+        margin-bottom: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+.like-close-btn {
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: #000;
+    opacity: 0.5;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+    .like-close-btn:hover {
+        opacity: 0.8;
+    }
+
+.like-offcanvas-body {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    height: calc(100% - 65px);
+}
+
+/* --- Item trong wishlist --- */
+.like-list-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+    .like-list-item:last-child {
+        border-bottom: 0;
+        margin-bottom: 0;
+    }
+
+.like-item-img {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    margin-right: 15px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.like-item-info {
+    flex: 1;
+}
+
+    .like-item-info h5 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 220px;
+    }
+
+        .like-item-info h5 a {
+            color: #222;
+            text-decoration: none;
+        }
+
+            .like-item-info h5 a:hover {
+                color: #F7941D;
+            }
+
+.like-item-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: #F7941D;
+}
+
+.like-item-remove {
+    background: transparent;
+    border: none;
+    color: #dc3545;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+    .like-item-remove:hover {
+        color: #a71d2a;
+    }

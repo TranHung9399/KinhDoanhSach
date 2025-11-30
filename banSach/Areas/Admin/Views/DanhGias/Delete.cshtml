@@ -1,0 +1,62 @@
+﻿@model banSach.Models.DanhGia
+
+@{
+    ViewBag.Title = "Xóa đánh giá";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<h2>Xóa đánh giá</h2>
+
+<div class="alert alert-warning">
+    <h3>Bạn có chắc chắn muốn xóa đánh giá này?</h3>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Sách:</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Sach.TenSach)</dd>
+
+            <dt class="col-sm-3">Khách hàng:</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.KhachHang.HoTen)</dd>
+
+            <dt class="col-sm-3">Đánh giá:</dt>
+            <dd class="col-sm-9">
+                <span class="badge badge-warning">
+                    @for (int i = 1; i <= Model.SoSao; i++)
+                    {
+                        <i class="fa fa-star"></i>
+                    }
+                    (@Model.SoSao sao)
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Bình luận:</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.BinhLuan)</dd>
+
+            <dt class="col-sm-3">Ngày đánh giá:</dt>
+            <dd class="col-sm-9">
+                @(Model.NgayDanhGia.HasValue ? Model.NgayDanhGia.Value.ToString("dd/MM/yyyy HH:mm") : "")
+            </dd>
+        </dl>
+    </div>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="form-actions mt-3">
+        <button type="submit" class="btn btn-danger">Xóa</button>
+        @Html.ActionLink("Hủy", "Index", null, new { @class = "btn btn-secondary" })
+    </div>
+}
+
+<style>
+    .fa-star {
+        color: #ffc107;
+    }
+
+    .card {
+        margin-top: 20px;
+    }
+</style>

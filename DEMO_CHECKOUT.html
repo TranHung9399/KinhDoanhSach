@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Trang Thanh Toán - Hiệu Sách Con Cú Vọ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding: 20px; }
+        .demo-container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .feature-box { border: 2px solid #007bff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #f8f9ff; }
+        .feature-title { color: #007bff; font-weight: bold; margin-bottom: 10px; }
+        .screenshot-placeholder { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 100px 20px; text-align: center; border-radius: 8px; margin: 20px 0; }
+        .feature-list { list-style: none; padding-left: 0; }
+        .feature-list li { padding: 8px 0; }
+        .feature-list li:before { content: "✓ "; color: #28a745; font-weight: bold; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="text-center mb-5">
+            <h1 class="display-4">🦉 Trang Thanh Toán Hoàn Chỉnh</h1>
+            <p class="lead">Hiệu Sách Con Cú Vọ - Checkout Page Demo</p>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Đây là trang demo giới thiệu các tính năng của trang thanh toán. 
+            Để xem trang thực tế, vui lòng truy cập <code>/GioHang/Checkout</code> sau khi thêm sản phẩm vào giỏ hàng.
+        </div>
+
+        <!-- Main Features -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <div class="feature-title"><i class="fas fa-map-marked-alt"></i> Tích Hợp API Địa Chỉ Việt Nam</div>
+                    <ul class="feature-list">
+                        <li>63 Tỉnh/Thành phố</li>
+                        <li>Dropdown cascade tự động</li>
+                        <li>API: provinces.open-api.vn</li>
+                        <li>Cập nhật real-time</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <div class="feature-title"><i class="fas fa-credit-card"></i> Phương Thức Thanh Toán</div>
+                    <ul class="feature-list">
+                        <li>COD (Thanh toán khi nhận hàng)</li>
+                        <li>VNPay (Chuyển khoản)</li>
+                        <li>Bảo mật cao</li>
+                        <li>Email xác nhận tự động</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <div class="feature-title"><i class="fas fa-tags"></i> Mã Giảm Giá</div>
+                    <ul class="feature-list">
+                        <li>Giảm theo %: GIAM10 (10%)</li>
+                        <li>Giảm cố định: GIAM50K (50,000đ)</li>
+                        <li>Miễn phí ship: FREESHIP</li>
+                        <li>Validation real-time</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <div class="feature-title"><i class="fas fa-shipping-fast"></i> Phương Thức Vận Chuyển</div>
+                    <ul class="feature-list">
+                        <li>Giao hàng tiêu chuẩn (3-5 ngày)</li>
+                        <li>Giao hàng nhanh (1-2 ngày)</li>
+                        <li>Tính phí tự động theo vùng</li>
+                        <li>Cập nhật real-time</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screenshot Placeholder -->
+        <div class="screenshot-placeholder">
+            <h2><i class="fas fa-image"></i> Giao Diện Trang Thanh Toán</h2>
+            <p class="mt-3">Layout 2 cột: Form bên trái, Đơn hàng bên phải</p>
+            <p>Responsive design - Tương thích mọi thiết bị</p>
+        </div>
+
+        <!-- Technical Details -->
+        <div class="feature-box">
+            <div class="feature-title"><i class="fas fa-code"></i> Chi Tiết Kỹ Thuật</div>
+            <div class="row">
+                <div class="col-md-4">
+                    <h6>Frontend</h6>
+                    <ul>
+                        <li>Bootstrap 5</li>
+                        <li>jQuery</li>
+                        <li>Font Awesome 6</li>
+                        <li>Custom CSS</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Backend</h6>
+                    <ul>
+                        <li>ASP.NET MVC</li>
+                        <li>C# .NET Framework</li>
+                        <li>Entity Framework</li>
+                        <li>SQL Server</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>API & Integration</h6>
+                    <ul>
+                        <li>Vietnamese Address API</li>
+                        <li>VNPay Payment Gateway</li>
+                        <li>Email Service (SMTP)</li>
+                        <li>RESTful API calls</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Files Created -->
+        <div class="feature-box">
+            <div class="feature-title"><i class="fas fa-file-code"></i> Files Đã Tạo/Cập Nhật</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Views & Controllers</h6>
+                    <code>Views/GioHang/Checkout.cshtml</code><br>
+                    <code>Controllers/GioHangController.cs</code>
+                </div>
+                <div class="col-md-6">
+                    <h6>Models</h6>
+                    <code>Models/CheckoutViewModel.cs</code><br>
+                    <code>Models/DiaChi.cs</code><br>
+                    <code>Models/MaGiamGia.cs</code>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h6>Assets</h6>
+                    <code>css/checkout.css</code><br>
+                    <code>Scripts/checkout.js</code>
+                </div>
+                <div class="col-md-6">
+                    <h6>Database</h6>
+                    <code>Database_Schema_Checkout.sql</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Validation -->
+        <div class="feature-box">
+            <div class="feature-title"><i class="fas fa-check-circle"></i> Form Validation</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Client-side Validation</h6>
+                    <ul class="feature-list">
+                        <li>Required fields check</li>
+                        <li>Email format validation</li>
+                        <li>Phone number format (10-11 digits)</li>
+                        <li>Real-time error display</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Server-side Validation</h6>
+                    <ul class="feature-list">
+                        <li>Cart not empty check</li>
+                        <li>Discount code validation</li>
+                        <li>Data sanitization</li>
+                        <li>Exception handling</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Responsive Design -->
+        <div class="feature-box">
+            <div class="feature-title"><i class="fas fa-mobile-alt"></i> Responsive Design</div>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <h6><i class="fas fa-desktop"></i> Desktop (>991px)</h6>
+                    <p>2-column layout<br>Sticky order summary</p>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="fas fa-tablet-alt"></i> Tablet (768-991px)</h6>
+                    <p>2-column compact<br>Reduced padding</p>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="fas fa-mobile-alt"></i> Mobile (<768px)</h6>
+                    <p>1-column layout<br>Full width form</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Installation Guide -->
+        <div class="alert alert-success">
+            <h5><i class="fas fa-rocket"></i> Cài Đặt & Sử Dụng</h5>
+            <ol>
+                <li>Chạy script SQL: <code>Database_Schema_Checkout.sql</code></li>
+                <li>Cấu hình VNPay trong Web.config (TmnCode, HashSecret)</li>
+                <li>Build project và chạy ứng dụng</li>
+                <li>Thêm sản phẩm vào giỏ hàng</li>
+                <li>Truy cập <code>/GioHang/Checkout</code></li>
+            </ol>
+            <p class="mb-0">
+                <strong>Chi tiết:</strong> Xem file <code>CHECKOUT_README.md</code> và <code>USAGE_GUIDE.md</code>
+            </p>
+        </div>
+
+        <!-- Contact -->
+        <div class="text-center mt-5">
+            <h5>📞 Hỗ Trợ</h5>
+            <p>Hotline: <strong>+060 (800) 801-582</strong></p>
+            <p class="text-muted">Giờ làm việc: 8:00 - 22:00 (tất cả các ngày)</p>
+        </div>
+
+        <hr>
+        <div class="text-center text-muted">
+            <small>© 2025 Hiệu Sách Con Cú Vọ. All rights reserved.</small><br>
+            <small>Developed by GitHub Copilot</small>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

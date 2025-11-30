@@ -1,0 +1,34 @@
+﻿@*
+    Cách dùng:
+        @Html.Partial("_CustomToast", new { message = "Đã thêm sách vào giỏ hàng!" })
+        hoặc
+        gọi showCustomToast('Nội dung thông báo');
+*@
+<div id="custom-toast-container"></div>
+
+<script>
+    // Hàm showCustomToast, bạn có thể gọi ở bất cứ đâu
+    function showCustomToast(msg) {
+        var toastHtml = `
+          <div class="custom-toast success-toast">
+            <span class="toast-icon" style="margin-right:8px;">
+              <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="10" fill="#fff" fill-opacity="0.13"/>
+                <path d="M6 10.5l3 3 5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>` + msg + `</span>
+          </div>
+        `;
+        var $container = $('#custom-toast-container');
+        if ($container.length === 0) {
+            $('body').append('<div id="custom-toast-container"></div>');
+            $container = $('#custom-toast-container');
+        }
+        $container.append(toastHtml);
+        setTimeout(function () {
+            $container.find('.custom-toast').addClass('hide');
+            setTimeout(function () { $container.find('.custom-toast').remove(); }, 400);
+        }, 2000);
+    }
+</script>

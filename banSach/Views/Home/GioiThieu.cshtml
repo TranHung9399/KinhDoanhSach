@@ -1,0 +1,209 @@
+﻿@{
+    ViewBag.Title = "Giới thiệu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .about-page {
+        background: white;
+        color: #333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+    }
+
+    .company-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .auth-links {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .auth-links a {
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .auth-links .divider {
+        width: 1px;
+        height: 20px;
+        background: rgba(255,255,255,0.5);
+    }
+
+    .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .about-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        text-align: center;
+        margin-bottom: 40px;
+        text-transform: uppercase;
+    }
+
+    .about-section {
+        margin-bottom: 0;
+    }
+
+    .section-heading {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 10px;
+    }
+
+    .services-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .services-list li {
+        padding: 8px 0;
+        padding-left: 20px;
+        position: relative;
+        color: #555;
+    }
+
+    .services-list li:before {
+        content: "•";
+        color: #28a745;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+    }
+
+    .core-values {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 8px;
+        margin-top: 30px;
+    }
+
+    .values-text {
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.8;
+        margin-bottom: 20px;
+    }
+
+    .highlight-box {
+        background: #e8f5e8;
+        border: 1px solid #28a745;
+        padding: 20px;
+        border-radius: 6px;
+        margin: 20px 0;
+    }
+
+    .highlight-box h4 {
+        color: #28a745;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    media (max-width: 768px) {
+        .about-title {
+            font-size: 2rem;
+        }
+        
+        .main-content {
+            padding: 20px 15px;
+        }
+        
+        .vision-mission-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="about-page">
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="about-title">Giới thiệu</h1>
+
+        <!-- Company Introduction -->
+        <div class="about-section">
+            <div class="about-text">
+                <strong>Hiệu Sách Con Cú Vọ</strong> được thành lập vào năm 2019 tại thành phố Đà Nẵng, là một trong những cửa hàng sách uy tín và thân thiện tại khu vực miền Trung. Với phương châm <em>"Mỗi quyển sách – Một hành trình tri thức"</em>, chúng tôi mong muốn mang đến cho khách hàng không chỉ là sách, mà là cả một thế giới tri thức phong phú, truyền cảm hứng và nuôi dưỡng tinh thần ham học hỏi.
+            </div>
+
+            <div class="highlight-box">
+                <h4>🎯 Thành tựu nổi bật</h4>
+                <p>Hiệu Sách Con Cú Vọ đã thành công trong việc xây dựng một cộng đồng yêu sách sôi động tại Đà Nẵng, tổ chức nhiều sự kiện văn hóa, triển lãm sách và các buổi giao lưu tác giả, góp phần phát triển văn hóa đọc trong cộng đồng.</p>
+            </div>
+        </div>
+        <!-- Products and Services -->
+        <div class="about-section">
+            <h2 class="section-heading">Sản phẩm và dịch vụ</h2>
+            <div class="about-text">
+                Hiệu Sách Con Cú Vọ cung cấp đa dạng các sản phẩm và dịch vụ chất lượng cao:
+            </div>
+            <ul class="services-list">
+                <li>Bán lẻ và bán buôn sách từ nhiều thể loại: văn học, kỹ năng sống, sách thiếu nhi, sách chuyên ngành, truyện tranh</li>
+                <li>Tư vấn chọn sách phù hợp với nhu cầu và sở thích của từng khách hàng</li>
+                <li>Dịch vụ đặt hàng sách theo yêu cầu, kể cả những cuốn sách khó tìm</li>
+                <li>Giao hàng nhanh chóng trong nội thành Đà Nẵng và toàn quốc</li>
+                <li>Chương trình khách hàng thân thiết với nhiều ưu đãi hấp dẫn</li>
+                <li>Tổ chức các sự kiện văn hóa, triển lãm sách và giao lưu tác giả</li>
+            </ul>
+        </div>
+
+        <!-- Core Values -->
+        <div class="core-values">
+            <h2 class="section-heading">Giá trị cốt lõi</h2>
+            <div class="values-text">
+                Hiệu Sách Con Cú Vọ xây dựng và phát triển dựa trên những giá trị cốt lõi vững chắc:
+            </div>
+            <ul class="services-list">
+                <li><strong>Chất lượng:</strong> Cam kết cung cấp sách chính hãng, chất lượng cao từ các nhà xuất bản uy tín</li>
+                <li><strong>Uy tín:</strong> Xây dựng niềm tin với khách hàng thông qua dịch vụ tốt và chính sách minh bạch</li>
+                <li><strong>Đổi mới:</strong> Không ngừng cải tiến dịch vụ, áp dụng công nghệ hiện đại để mang đến trải nghiệm tốt nhất</li>
+                <li><strong>Trách nhiệm:</strong> Đóng góp tích cực cho sự phát triển văn hóa đọc và giáo dục trong cộng đồng</li>
+                <li><strong>Thân thiện:</strong> Tạo môi trường mua sắm thoải mái, nhân viên tư vấn nhiệt tình và chuyên nghiệp</li>
+            </ul>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="about-section">
+            <h2 class="section-heading">Thông tin liên hệ</h2>
+            <div class="about-text">
+                Hiệu Sách Con Cú Vọ luôn sẵn sàng phục vụ và hỗ trợ quý khách hàng:
+            </div>
+            <div class="highlight-box">
+                <h4>📍 Địa chỉ:</h4>
+                <p>Sơn Trà, Đà Nẵng - Thành phố đáng sống</p>
+                
+                <h4>📧 Email:</h4>
+                <p>info@hieusachconcuvo.com</p>
+                
+                <h4>📞 Điện thoại:</h4>
+                <p>+84 123 456 789</p>
+                
+                <h4>🌐 Facebook:</h4>
+                <p>fb.com/hieusachconcuvo</p>
+            </div>
+        </div>
+
+        <!-- Closing -->
+        <div class="about-section text-center">
+            <div class="about-text">
+                Chúng tôi trân trọng từng khách hàng đã, đang và sẽ đồng hành cùng <strong>Hiệu Sách Con Cú Vọ</strong> trên hành trình lan tỏa tri thức. Cảm ơn bạn đã ghé thăm và ủng hộ chúng tôi!
+            </div>
+        </div>
+    </div>
+</div>
+

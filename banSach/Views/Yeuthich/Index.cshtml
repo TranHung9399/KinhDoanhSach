@@ -1,0 +1,139 @@
+﻿@model PagedList.IPagedList<banSach.Models.Sach>
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "Danh sách yêu thích";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="@Url.Content("~/Content/css/catalog.css")" />
+<link rel="stylesheet" href="~/Content/css/thongbao1.css" />
+@Html.Partial("_CustomToast")
+
+<div class="container mt-4 mb-5">
+    <nav class="breadcrumb mb-4" style="justify-content: flex-start; text-align: left;">
+        <a class="breadcrumb-item" href="/">Trang chủ</a>
+        <span class="breadcrumb-item active">Danh sách yêu thích</span>
+    </nav>
+
+    <h2 class="mb-4">
+        <i class="fa fa-heart text-danger"></i> Danh sách yêu thích
+    </h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
+                    <div class="product-card fade-in">
+                        <div class="product-img-wrapper">
+                            @{
+                                var phanTramGiam = (item.GiaBan > 0 && item.GiaChietKhau.HasValue) ?
+                                    Math.Round(100M - item.GiaChietKhau.Value * 100M / item.GiaBan.Value) : 0;
+                            }
+                            @if (phanTramGiam > 0)
+                            {
+                                <div class="badge-sale">-@phanTramGiam.ToString("0")%</div>
+                            }
+                            <a href="@Url.Action("Details", "Book", new { id = item.MaSach })">
+                                <img src="~/img/sach/@item.Hinh" alt="@item.TenSach" onerror="this.onerror=null;this.src='/img/no-image.jpg'">
+                            </a>
+                            <div class="product-actions">
+                                <a href="#" class="action-btn favorite-btn active" data-masach="@item.MaSach" title="Xóa khỏi yêu thích">
+                                    <i class="fa fa-heart"></i>
+                                </a>
+                                <a href="@Url.Action("Details", "Book", new { id = item.MaSach })" class="action-btn" title="Xem chi tiết">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="#" class="action-btn btnAddCart" 
+                                   data-masach="@item.MaSach"
+                                   data-url="@Url.Action("ThemGiohangAjax", "GioHang")"
+                                   title="Thêm vào giỏ">
+                                    <i class="fa fa-shopping-cart"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="product-details">
+                            <h3 class="product-title">
+                                <a href="@Url.Action("Details", "Book", new { id = item.MaSach })">@item.TenSach</a>
+                            </h3>
+                            <div class="product-price-box">
+                                @if (item.SoLuongTon != 0 && item.SoLuongTon != null)
+                                {
+                                    <span class="current-price">@String.Format("{0:N0}đ", item.GiaChietKhau ?? item.GiaBan)</span>
+                                    if (item.GiaChietKhau.HasValue && item.GiaChietKhau < item.GiaBan)
+                                    {
+                                        <span class="old-price">@String.Format("{0:N0}đ", item.GiaBan)</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">Hết hàng</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="pagination-container">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page }), PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(new AjaxOptions() { HttpMethod = "GET", UpdateTargetId = "book-list" }))
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            <i class="fa fa-heart-o fa-3x mb-3"></i>
+            <p>Danh sách yêu thích của bạn đang trống</p>
+            <a href="@Url.Action("Index", "Book")" class="btn btn-success">Khám phá sách ngay</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/book-common.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.favorite-btn').click(function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var maSach = btn.data('masach');
+
+                $.ajax({
+                    url: '@Url.Action("ToggleFavorite", "YeuThich")',
+                    type: 'POST',
+                    data: { maSach: maSach },
+                    success: function(res) {
+                        if (res.success) {
+                            // Remove the book card from the page
+                            // Find the closest column div (col-xl-3...)
+                            var cardCol = btn.closest('.col-12'); 
+                            cardCol.fadeOut(300, function() {
+                                $(this).remove();
+                                // Check if there are no more books
+                                if ($('.product-card').length === 0) {
+                                    // Show empty state message
+                                    $('.container .row').first().html(
+                                        '<div class="col-12">' +
+                                        '<div class="alert alert-info text-center">' +
+                                        '<i class="fa fa-heart-o fa-3x mb-3"></i>' +
+                                        '<p>Danh sách yêu thích của bạn đang trống</p>' +
+                                        '<a href="@Url.Action("Index", "Book")" class="btn btn-success">Khám phá sách ngay</a>' +
+                                        '</div>' +
+                                        '</div>'
+                                    );
+                                }
+                            });
+                        } else {
+                            alert(res.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra. Vui lòng thử lại!');
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,50 @@
+﻿@{
+	ViewBag.Title = "PaymentConfirm";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="~/Content/thongbao1.css" />
+<div class="container mt-5">
+	<div class="card">
+		<div class="card-header">
+			<h2 class="text-center">Payment Confirmation</h2>
+		</div>
+		<div class="card-body">
+			<div class="alert alert-info">
+				<p class="lead">@ViewBag.Message</p>
+			</div>
+
+			@if (!string.IsNullOrEmpty(ViewBag.Message) && ViewBag.Message.Contains("Có lỗi"))
+			{
+				<div class="alert alert-danger">
+					<p><strong>Thông báo:</strong> Đã có lỗi xảy ra trong quá trình xử lý.</p>
+				</div>
+			}
+			else
+			{
+				<div class="text-center mt-3">
+					<p>Bạn sẽ được chuyển hướng sau 3 giây...</p>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+@Html.Partial("_CustomToast")
+
+@section Scripts {
+	<script>
+        $(function () {
+            // Nếu thành công thì show toast
+            @if (!string.IsNullOrEmpty(ViewBag.Message) && !ViewBag.Message.Contains("Có lỗi"))
+            {
+	            <text>
+                showCustomToast('Đặt hàng thành công!');
+                </text>
+            }
+            // Chuyển hướng sau 3 giây
+            setTimeout(function () {
+                window.location.href = '@Url.Action("Index", "GioHang")';
+            }, 3000);
+        });
+    </script>
+}

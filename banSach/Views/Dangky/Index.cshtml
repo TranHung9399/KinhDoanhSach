@@ -1,0 +1,371 @@
+﻿@model banSach.Models.KhachHang
+@{
+    ViewBag.Title = "Đăng ký";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .register-container {
+        max-width: 600px; /* Tăng chiều rộng để chứa label và input trên cùng hàng */
+        margin: 50px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center; /* Căn giữa theo chiều dọc */
+        gap: 15px; /* Khoảng cách giữa label và input */
+    }
+
+        .form-group label {
+            flex: 0 0 150px; /* Label chiếm chiều rộng cố định */
+            font-weight: bold;
+            text-align: right; /* Căn phải label */
+        }
+
+        .form-group .input-container {
+            flex: 1; /* Input chiếm phần còn lại */
+            position: relative; /* Để định vị con mắt */
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .form-group .text-danger {
+            font-size: 14px;
+            color: red;
+            margin-top: 5px;
+            text-align: left; /* Căn trái lỗi */
+        }
+
+        .form-group .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: #ff6f00; /* Màu cam từ layout */
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+            .form-group .btn-primary:hover {
+                background: #e65c00;
+            }
+
+    .toast-error {
+        color: red;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .alert-success {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+        .password-container input {
+            padding-right: 40px; /* Chừa chỗ cho con mắt */
+        }
+
+        .password-container .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #666;
+        }
+
+    /* Đảm bảo nút Đăng Ký căn giữa */
+    .submit-group {
+        justify-content: center;
+    }
+
+    .register-link {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 14px;
+    }
+
+        .register-link a {
+            color: #ff6f00;
+            text-decoration: none;
+        }
+
+            .register-link a:hover {
+                text-decoration: underline;
+            }
+</style>
+<!-- TOAST NOTIFICATIONS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+    .custom-toast-wrapper {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 9999;
+    }
+
+    .custom-toast {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 10px;
+        min-width: 250px;
+        max-width: 350px;
+        color: white;
+        font-size: 14px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease;
+        gap: 8px;
+        position: relative;
+    }
+
+    .toast-icon {
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    .toast-message {
+        flex: 1;
+        text-align: left;
+        word-break: break-word;
+    }
+
+    .toast-close {
+        cursor: pointer;
+        font-size: 16px;
+        margin-left: 8px;
+        opacity: 0.8;
+    }
+
+    .toast-close:hover {
+        opacity: 1;
+    }
+
+    .success-toast {
+        background-color: #2ecc40;
+    }
+
+    .error-toast {
+        background-color: #e74c3c;
+    }
+
+    keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+    .register-bg {
+        min-height: 10vh;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+    }
+    .register-title {
+        margin-top: 40px;
+        margin-bottom: 30px;
+        font-size: 24px;
+        font-weight: 500;
+        text-align: center;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .register-box {
+        background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+        max-width: 340px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 32px 28px 24px 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .input-group {
+        position: relative;
+        margin-bottom: 18px;
+    }
+    .input-group input {
+        width: 100%;
+        padding: 10px 12px 10px 38px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 15px;
+        background: #fafafa;
+        transition: border 0.2s;
+    }
+    .input-group input:focus {
+        border: 1.5px solid #4caf50;
+        outline: none;
+        background: #fff;
+    }
+    .input-group .input-group-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #bdbdbd;
+        font-size: 16px;
+    }
+    .input-group .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #bdbdbd;
+        font-size: 17px;
+    }
+    .btn-register {
+        width: 100%;
+        background: #21a957;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        padding: 10px 0;
+        margin-bottom: 10px;
+        transition: background 0.2s;
+    }
+    .btn-register:hover {
+        background: #188c43;
+    }
+    .register-back {
+        font-size: 14px;
+        margin-bottom: 16px;
+        color: #444;
+        text-align: left;
+    }
+    .register-back a {
+        color: #21a957;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .register-back a:hover {
+        text-decoration: underline;
+    }
+    .social-login-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+    }
+    .btn-facebook {
+        background: #3b5998;
+        color: #fff;
+        flex: 1;
+        border: none;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 15px;
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: background 0.2s;
+    }
+    .btn-facebook:hover {
+        background: #2d4373;
+    }
+    .btn-google {
+        background: #dd4b39;
+        color: #fff;
+        flex: 1;
+        border: none;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 15px;
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: background 0.2s;
+    }
+    .btn-google:hover {
+        background: #b03a2e;
+    }
+    .text-danger {
+        font-size: 13px;
+        color: #e74c3c;
+        margin-top: 3px;
+        text-align: left;
+    }
+</style>
+<div class="register-bg">
+    <div class="register-title">TẠO TÀI KHOẢN</div>
+    <div class="register-box">
+        @using (Html.BeginForm("Index", "DangKy", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            if (TempData["Error"] != null)
+            {
+                <div style="color: red; font-weight: bold; margin-bottom: 10px; text-align:left;">
+                    @Html.Raw(TempData["Error"])
+                </div>
+            }
+            <div class="input-group">
+                <span class="input-group-icon"><i class="fa fa-user"></i></span>
+                <input type="text" name="HoTen" id="HoTen" placeholder="Họ và Tên" class="form-control" value="@Request["HoTen"]" required />
+            </div>
+            <div class="input-group">
+                <span class="input-group-icon"><i class="fa fa-envelope"></i></span>
+                <input type="email" name="Email" id="Email" placeholder="Email" class="form-control" value="@Request["Email"]" required />
+            </div>
+            <div class="input-group password-container">
+                <span class="input-group-icon"><i class="fa fa-lock"></i></span>
+                <input type="password" name="MatKhau" id="MatKhau" placeholder="Mật khẩu" class="form-control" required />
+                <i class="fa fa-eye toggle-password" id="togglePassword"></i>
+            </div>
+            <input type="submit" value="Đăng ký" class="btn-register" />
+            <div class="register-back">
+                <a href="@Url.Action("Index", "Dangnhap")">Quay về</a>
+            </div>
+            <div class="social-login-row">
+                <button type="button" class="btn-facebook"><i class="fa fa-facebook"></i></button>
+                <button type="button" class="btn-google"><i class="fa fa-google-plus"></i></button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    // Toggle password
+    const togglePassword = document.getElementById('togglePassword');
+    togglePassword?.addEventListener('click', () => {
+        const passwordInput = document.getElementById('MatKhau');
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        togglePassword.classList.toggle('fa-eye', !isPassword);
+        togglePassword.classList.toggle('fa-eye-slash', isPassword);
+    });
+</script>

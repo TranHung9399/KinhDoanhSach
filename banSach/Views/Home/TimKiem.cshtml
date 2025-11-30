@@ -1,0 +1,91 @@
+﻿@model List<banSach.Models.Sach>
+@{
+    ViewBag.Title = "Kết quả tìm kiếm";
+    var loaiList = ViewBag.LoaiList as List<banSach.Models.Loai>;
+    var searchKey = ViewBag.SearchKey as string;
+}
+<link rel="stylesheet" href="~/Content/css/thongbao1.css" />
+@Html.Partial("_CustomToast")
+
+<div class="container my-4">
+  
+    <!-- Hiển thị kết quả tìm kiếm -->
+    <div class="col-12 mt-4">
+        @if (!string.IsNullOrEmpty(searchKey))
+        {
+            <h4>Kết quả tìm kiếm cho: "@searchKey"</h4>
+        }
+        else
+        {
+            <h4>Vui lòng nhập từ khóa tìm kiếm</h4>
+        }
+
+        @if (Model == null || Model.Count == 0)
+        {
+            <p class="text-muted">Không tìm thấy sách nào phù hợp với từ khóa.</p>
+        }
+        else
+        {
+            <link rel="stylesheet" href="@Url.Content("~/Content/css/catalog.css")" />
+            <div class="row">
+                @foreach (var sach in Model)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-12 mb-4">
+                        <div class="product-card fade-in">
+                            <div class="product-img-wrapper">
+                                @{
+                                    var phanTramGiam = (sach.GiaBan > 0 && sach.GiaChietKhau.HasValue) ?
+                                        Math.Round(100M - sach.GiaChietKhau.Value * 100M / sach.GiaBan.Value) : 0;
+                                }
+                                @if (phanTramGiam > 0)
+                                {
+                                    <div class="badge-sale">-@phanTramGiam.ToString("0")%</div>
+                                }
+                                <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })">
+                                    <img src="~/img/sach/@sach.Hinh" alt="@sach.TenSach" onerror="this.onerror=null;this.src='/img/no-image.jpg'">
+                                </a>
+                                <div class="product-actions">
+                                    <a href="#" class="action-btn favorite-btn-home" data-masach="@sach.MaSach" title="Yêu thích">
+                                        <i class="fa fa-heart"></i>
+                                    </a>
+                                    <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })" class="action-btn" title="Xem chi tiết">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                    <a href="#" class="action-btn btnAddCart" 
+                                       data-masach="@sach.MaSach"
+                                       data-url="@Url.Action("ThemGiohangAjax", "GioHang")"
+                                       title="Thêm vào giỏ">
+                                        <i class="fa fa-shopping-cart"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="product-details">
+                                <h3 class="product-title">
+                                    <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })">@sach.TenSach</a>
+                                </h3>
+                                <div class="product-price-box">
+                                    @if (sach.SoLuongTon != 0 && sach.SoLuongTon != null)
+                                    {
+                                        <span class="current-price">@String.Format("{0:N0}đ", sach.GiaChietKhau ?? sach.GiaBan)</span>
+                                        if (sach.GiaChietKhau.HasValue && sach.GiaChietKhau < sach.GiaBan)
+                                        {
+                                            <span class="old-price">@String.Format("{0:N0}đ", sach.GiaBan)</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger fw-bold">Hết hàng</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/book-common.js"></script>
+}

@@ -1,0 +1,565 @@
+﻿@{
+    var successMsg = TempData["SuccessMessage"] as string;
+    var errorMsg = TempData["ErrorMessage"] as string;
+}
+
+@if (!string.IsNullOrEmpty(successMsg))
+{
+    <div class="alert-password-success">
+        <i class="fas fa-check-circle"></i>
+        <span>@successMsg</span>
+        <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorMsg))
+{
+    <div class="alert-password-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>@errorMsg</span>
+        <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+}
+
+<div class="password-change-container">
+    @using (Html.BeginForm("DoiMatKhau", "Thongtin", FormMethod.Post, new { @id = "passwordChangeForm", @class = "password-change-form" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="password-field-group">
+            <label class="password-label">
+                <i class="fas fa-lock"></i>
+                Mật khẩu hiện tại
+            </label>
+            <div class="password-input-container">
+                <input type="password"
+                       name="oldPassword"
+                       id="oldPassword"
+                       class="password-input"
+                       placeholder="Nhập mật khẩu hiện tại"
+                       required
+                       autocomplete="current-password" />
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordField('oldPassword')">
+                    <i class="fas fa-eye" id="oldPassword-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="password-field-group">
+            <label class="password-label">
+                <i class="fas fa-key"></i>
+                Mật khẩu mới
+            </label>
+            <div class="password-input-container">
+                <input type="password"
+                       name="newPassword"
+                       id="newPassword"
+                       class="password-input"
+                       placeholder="Nhập mật khẩu mới"
+                       required
+                       minlength="6"
+                       autocomplete="new-password" />
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordField('newPassword')">
+                    <i class="fas fa-eye" id="newPassword-icon"></i>
+                </button>
+            </div>
+            <div class="password-strength" id="passwordStrength" style="display: none;">
+                <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+                <span class="strength-text" id="strengthText"></span>
+            </div>
+        </div>
+
+        <div class="password-field-group">
+            <label class="password-label">
+                <i class="fas fa-check-circle"></i>
+                Xác nhận mật khẩu mới
+            </label>
+            <div class="password-input-container">
+                <input type="password"
+                       name="confirmPassword"
+                       id="confirmPassword"
+                       class="password-input"
+                       placeholder="Nhập lại mật khẩu mới"
+                       required
+                       minlength="6"
+                       autocomplete="new-password" />
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordField('confirmPassword')">
+                    <i class="fas fa-eye" id="confirmPassword-icon"></i>
+                </button>
+            </div>
+            <span class="field-error" id="confirmError" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Mật khẩu xác nhận không khớp
+            </span>
+        </div>
+
+       
+        <div class="password-form-actions">
+            <button type="submit" class="btn-save-password" id="submitBtn">
+                <i class="fas fa-check"></i>
+                <span>Đổi mật khẩu</span>
+            </button>
+            <button type="button" class="btn-reset-password" onclick="resetPasswordForm()">
+                <i class="fas fa-redo"></i>
+                <span>Đặt lại</span>
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    .alert-password-success,
+    .alert-password-error {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        animation: slideDown 0.3s ease;
+    }
+
+    .alert-password-success {
+        background: var(--pale-green);
+        color: var(--dark-green);
+        border-left: 4px solid var(--primary-green);
+    }
+
+    .alert-password-error {
+        background: #fee;
+        color: #e74c3c;
+        border-left: 4px solid #e74c3c;
+    }
+
+    .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: inherit;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
+
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+    .password-change-container {
+        max-width: 100%;
+    }
+
+    .password-change-intro {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 25px;
+        background: linear-gradient(135deg, var(--pale-green) 0%, #e8f8f5 100%);
+        border-radius: 15px;
+        margin-bottom: 30px;
+        border: 2px solid var(--light-green);
+    }
+
+    .password-change-form {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .password-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .password-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+        .password-label i {
+            color: var(--primary-green);
+            font-size: 16px;
+        }
+
+    .password-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .password-input {
+        width: 100%;
+        padding: 14px 50px 14px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .password-input:focus {
+            border-color: var(--primary-green);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
+        }
+
+        .password-input.error {
+            border-color: #e74c3c;
+        }
+
+        .password-input.success {
+            border-color: var(--primary-green);
+        }
+
+    .password-toggle-btn {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 18px;
+        padding: 8px;
+        transition: color 0.3s;
+    }
+
+        .password-toggle-btn:hover {
+            color: var(--primary-green);
+        }
+
+    .field-hint {
+        font-size: 13px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .field-error {
+        font-size: 13px;
+        color: #e74c3c;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        animation: shake 0.3s;
+    }
+
+    .password-strength {
+        margin-top: 8px;
+    }
+
+    .strength-bar {
+        height: 6px;
+        background: #e0e0e0;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 5px;
+    }
+
+    .strength-fill {
+        height: 100%;
+        transition: width 0.3s, background 0.3s;
+        border-radius: 3px;
+    }
+
+    .strength-text {
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .password-requirements {
+        background: var(--pale-green);
+        border: 2px solid var(--light-green);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+        .password-requirements h6 {
+            margin: 0 0 12px 0;
+            color: var(--text-dark);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .password-requirements li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+            .password-requirements li i {
+                font-size: 8px;
+                color: var(--text-muted);
+            }
+
+            .password-requirements li.valid {
+                color: var(--primary-green);
+            }
+
+                .password-requirements li.valid i {
+                    color: var(--primary-green);
+                }
+
+    .password-form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .btn-save-password,
+    .btn-reset-password {
+        flex: 1;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-save-password {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        color: white;
+    }
+
+        .btn-save-password:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-save-password:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .btn-reset-password {
+        background: #ecf0f1;
+        color: var(--text-dark);
+    }
+
+        .btn-reset-password:hover {
+            background: #bdc3c7;
+        }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .password-change-intro {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .password-form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<script>
+    // Toggle password visibility
+    function togglePasswordField(fieldId) {
+        const input = document.getElementById(fieldId);
+        const icon = document.getElementById(fieldId + '-icon');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Password strength checker
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        const strengthBar = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        const strengthContainer = document.getElementById('passwordStrength');
+
+        if (password.length === 0) {
+            strengthContainer.style.display = 'none';
+            return;
+        }
+
+        strengthContainer.style.display = 'block';
+
+        if (password.length >= 6) strength += 25;
+        if (password.length >= 10) strength += 25;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+        if (/\d/.test(password)) strength += 15;
+        if (/[^a-zA-Z\d]/.test(password)) strength += 10;
+
+        let color, text;
+        if (strength < 40) {
+            color = '#e74c3c';
+            text = 'Yếu';
+        } else if (strength < 70) {
+            color = '#f39c12';
+            text = 'Trung bình';
+        } else {
+            color = '#2ecc71';
+            text = 'Mạnh';
+        }
+
+        strengthBar.style.width = strength + '%';
+        strengthBar.style.background = color;
+        strengthText.textContent = text;
+        strengthText.style.color = color;
+    }
+
+    // Validate passwords match
+    function validatePasswordMatch() {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const confirmInput = document.getElementById('confirmPassword');
+        const confirmError = document.getElementById('confirmError');
+        const matchReq = document.getElementById('req-match');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (confirmPassword.length === 0) {
+            confirmInput.classList.remove('error', 'success');
+            confirmError.style.display = 'none';
+            matchReq.classList.remove('valid');
+            return false;
+        }
+
+        if (newPassword === confirmPassword) {
+            confirmInput.classList.remove('error');
+            confirmInput.classList.add('success');
+            confirmError.style.display = 'none';
+            matchReq.classList.add('valid');
+            return true;
+        } else {
+            confirmInput.classList.remove('success');
+            confirmInput.classList.add('error');
+            confirmError.style.display = 'flex';
+            matchReq.classList.remove('valid');
+            return false;
+        }
+    }
+
+    // Check length requirement
+    function checkLengthRequirement() {
+        const newPassword = document.getElementById('newPassword').value;
+        const lengthReq = document.getElementById('req-length');
+
+        if (newPassword.length >= 6) {
+            lengthReq.classList.add('valid');
+            return true;
+        } else {
+            lengthReq.classList.remove('valid');
+            return false;
+        }
+    }
+
+    // Reset form
+    function resetPasswordForm() {
+        document.getElementById('passwordChangeForm').reset();
+        document.getElementById('passwordStrength').style.display = 'none';
+        document.getElementById('confirmError').style.display = 'none';
+        document.querySelectorAll('.password-input').forEach(input => {
+            input.classList.remove('error', 'success');
+        });
+        document.querySelectorAll('.password-requirements li').forEach(li => {
+            li.classList.remove('valid');
+        });
+    }
+
+    // Form validation
+    function validateForm() {
+        const lengthValid = checkLengthRequirement();
+        const matchValid = validatePasswordMatch();
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (lengthValid && matchValid) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function () {
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+
+        if (newPasswordInput) {
+            newPasswordInput.addEventListener('input', function () {
+                checkPasswordStrength(this.value);
+                checkLengthRequirement();
+                validateForm();
+            });
+        }
+
+        if (confirmPasswordInput) {
+            confirmPasswordInput.addEventListener('input', function () {
+                validatePasswordMatch();
+                validateForm();
+            });
+        }
+
+        // Form submit validation
+        document.getElementById('passwordChangeForm').addEventListener('submit', function (e) {
+            if (!validatePasswordMatch() || !checkLengthRequirement()) {
+                e.preventDefault();
+                alert('Vui lòng kiểm tra lại thông tin mật khẩu!');
+            }
+        });
+    });
+</script>

@@ -1,0 +1,697 @@
+﻿@model banSach.Models.KhachHang
+
+@{
+    ViewBag.Title = "Thông tin cá nhân";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="profile-container">
+    <div class="container py-5">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <div class="avatar-circle">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="avatar-status online"></div>
+            </div>
+            <div class="profile-info">
+                <h2>@Model.HoTen</h2>
+                <p class="text-muted"><i class="fas fa-envelope"></i>@Model.Email</p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Sidebar Menu -->
+            <div class="col-lg-3">
+                <div class="profile-sidebar">
+                    <div class="sidebar-menu">
+                        <a href="#thongtin" class="menu-item active" data-tab="thongtin">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="#donhang" class="menu-item" data-tab="donhang">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Đơn hàng của tôi</span>
+                        </a>
+                        <a href="#diachi" class="menu-item" data-tab="diachi">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Sổ địa chỉ</span>
+                        </a>
+                        <a href="#doimatkhau" class="menu-item" data-tab="doimatkhau">
+                            <i class="fas fa-key"></i>
+                            <span>Đổi mật khẩu</span>
+                        </a>
+                        <a href="@Url.Action("Logout", "Account")" class="menu-item">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <<!-- Tab Thông tin cá nhân -->
+                <div class="tab-content active" id="tab-thongtin">
+                    <div class="content-card">
+                        <div class="card-header-custom">
+                            <h4><i class="fas fa-user-circle"></i> Thông tin cá nhân</h4>
+                            <button class="btn-edit" onclick="enableEdit()" type="button">
+                                <i class="fas fa-edit"></i> Chỉnh sửa
+                            </button>
+                        </div>
+                        <div class="card-body-custom">
+                            @if (TempData["SuccessMessage"] != null)
+                            {
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-check-circle"></i>
+                                    @TempData["SuccessMessage"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            }
+
+                            @if (TempData["ErrorMessage"] != null)
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    @TempData["ErrorMessage"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            }
+
+                            @using (Html.BeginForm("Edit", "Thongtin", FormMethod.Post, new { @class = "profile-form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.HiddenFor(m => m.MaKH)
+                                @Html.HiddenFor(m => m.HoTen)
+                                @Html.HiddenFor(m => m.MatKhau)
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group-custom">
+                                            <label><i class="fas fa-user"></i> Họ và tên</label>
+                                            @Html.TextBoxFor(m => m.HoTen, new { @class = "form-control-custom", disabled = "disabled", id = "hoTen" })
+                                            @Html.ValidationMessageFor(m => m.HoTen, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-custom">
+                                            <label><i class="fas fa-envelope"></i> Email</label>
+                                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control-custom", disabled = "disabled", id = "email" })
+                                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-custom">
+                                            <label><i class="fas fa-phone"></i> Số điện thoại</label>
+                                            @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "form-control-custom", disabled = "disabled", id = "soDienThoai" })
+                                            @Html.ValidationMessageFor(m => m.SoDienThoai, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-custom">
+                                            <label><i class="fas fa-calendar"></i> Ngày sinh</label>
+                                            @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-control-custom", type = "date", disabled = "disabled", id = "ngaySinh" })
+                                            @Html.ValidationMessageFor(m => m.NgaySinh, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group-custom">
+                                            <label><i class="fas fa-map-marker-alt"></i> Địa chỉ</label>
+                                            @Html.TextAreaFor(m => m.DiaChi, new { @class = "form-control-custom", rows = "3", disabled = "disabled", id = "diaChi" })
+                                            @Html.ValidationMessageFor(m => m.DiaChi, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-actions" style="display: none;" id="formActions">
+                                    <button type="submit" class="btn-save">
+                                        <i class="fas fa-check"></i> Lưu thay đổi
+                                    </button>
+                                    <button type="button" class="btn-cancel" onclick="cancelEdit()">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <<!-- Tab Đơn hàng -->
+                <div class="tab-content" id="tab-donhang">
+                    <div class="content-card">
+                        <div class="card-header-custom">
+                            <h4><i class="fas fa-shopping-bag"></i> Đơn hàng của tôi</h4>
+                        </div>
+                        <div class="card-body-custom">
+                            @Html.Partial("DonHang", ViewBag.DonHangs as PagedList.IPagedList<banSach.Models.DonDatHang>)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Địa chỉ -->
+                <div class="tab-content" id="tab-diachi">
+                    <div class="content-card">
+                        <div class="card-header-custom">
+                            <h4><i class="fas fa-map-marker-alt"></i> Sổ địa chỉ</h4>
+                            <button class="btn-add" onclick="showAddAddressModal()">
+                                <i class="fas fa-plus"></i> Thêm địa chỉ mới
+                            </button>
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="address-list">
+                                <!-- Address items sẽ được load -->
+                                <div class="address-item">
+                                    <div class="address-badge">Mặc định</div>
+                                    <h5>@Model.HoTen</h5>
+                                    <p class="address-detail">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        @Model.DiaChi
+                                    </p>
+                                    <p class="address-phone">
+                                        <i class="fas fa-phone"></i>
+                                        @Model.SoDienThoai
+                                    </p>
+                                    <div class="address-actions">
+                                        <button class="btn-action-edit">
+                                            <i class="fas fa-edit"></i> Chỉnh sửa
+                                        </button>
+                                        <button class="btn-action-delete">
+                                            <i class="fas fa-trash"></i> Xóa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <<!-- Tab Đổi mật khẩu -->
+                <div class="tab-content" id="tab-doimatkhau">
+                    <div class="content-card">
+                        <div class="card-header-custom">
+                            <h4><i class="fas fa-key"></i> Đổi mật khẩu</h4>
+                        </div>
+                        <div class="card-body-custom">
+                            @Html.Partial("DoiMatKhau")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-green: #2ecc71;
+        --dark-green: #27ae60;
+        --light-green: #a8e6cf;
+        --pale-green: #f0fff4;
+        --text-dark: #2c3e50;
+        --text-muted: #7f8c8d;
+    }
+
+    .profile-container {
+        background: linear-gradient(135deg, var(--pale-green) 0%, #e8f8f5 100%);
+        min-height: 100vh;
+        padding-top: 30px;
+    }
+
+    .profile-header {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .profile-avatar {
+        position: relative;
+    }
+
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 48px;
+        box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+    }
+
+    .avatar-status {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: var(--primary-green);
+        border: 4px solid white;
+    }
+
+    .profile-info h2 {
+        color: var(--text-dark);
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .profile-info p {
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .profile-sidebar {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.1);
+    }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 20px;
+        border-radius: 10px;
+        color: var(--text-dark);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .menu-item i {
+            font-size: 20px;
+            width: 25px;
+        }
+
+        .menu-item:hover {
+            background: var(--pale-green);
+            color: var(--primary-green);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: var(--primary-green);
+            color: white;
+        }
+
+    .content-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+        color: white;
+        padding: 25px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .card-header-custom h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .card-body-custom {
+        padding: 30px;
+    }
+
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+        .form-group-custom label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+            .form-group-custom label i {
+                color: var(--primary-green);
+                margin-right: 8px;
+            }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-size: 15px;
+    }
+
+        .form-control-custom:focus {
+            border-color: var(--primary-green);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+        }
+
+        .form-control-custom:disabled {
+            background: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+    .btn-edit, .btn-add {
+        background: white;
+        color: var(--primary-green);
+        border: 2px solid white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+        .btn-edit:hover, .btn-add:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+    .btn-save {
+        background: var(--primary-green);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+        .btn-save:hover {
+            background: var(--dark-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+    .btn-cancel {
+        background: #ecf0f1;
+        color: var(--text-dark);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-cancel:hover {
+            background: #bdc3c7;
+        }
+
+    .tab-content {
+        display: none;
+    }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+        .empty-state i {
+            font-size: 80px;
+            color: var(--light-green);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h5 {
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+    .btn-primary-custom {
+        display: inline-block;
+        background: var(--primary-green);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary-custom:hover {
+            background: var(--dark-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+    .address-item {
+        background: var(--pale-green);
+        border: 2px solid var(--light-green);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .address-badge {
+        position: absolute;
+        top: -10px;
+        right: 20px;
+        background: var(--primary-green);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .address-item h5 {
+        color: var(--text-dark);
+        margin-bottom: 10px;
+    }
+
+    .address-detail, .address-phone {
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+
+        .address-detail i, .address-phone i {
+            color: var(--primary-green);
+            margin-right: 8px;
+        }
+
+    .address-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action-edit, .btn-action-delete {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .btn-action-edit {
+        background: var(--primary-green);
+        color: white;
+    }
+
+        .btn-action-edit:hover {
+            background: var(--dark-green);
+        }
+
+    .btn-action-delete {
+        background: #e74c3c;
+        color: white;
+    }
+
+        .btn-action-delete:hover {
+            background: #c0392b;
+        }
+
+    @@media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+            font-size: 40px;
+        }
+    }
+
+    .password-input-wrapper {
+        position: relative;
+    }
+
+        .password-input-wrapper .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+        }
+
+            .password-input-wrapper .toggle-password:hover {
+                color: var(--primary-green);
+            }
+
+    .form-text {
+        display: block;
+        margin-top: 5px;
+        font-size: 13px;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+    }
+
+    .alert-success {
+        background: var(--pale-green);
+        color: var(--dark-green);
+        border-left: 4px solid var(--primary-green);
+    }
+
+    .alert-danger {
+        background: #fee;
+        color: #e74c3c;
+        border-left: 4px solid #e74c3c;
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        margin-left: auto;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+        font-size: 12px;
+        display: block;
+        margin-top: 5px;
+    }
+</style>
+
+<script>
+    function enableEdit() {
+        document.querySelectorAll('.form-control-custom').forEach(input => {
+            input.disabled = false;
+        });
+        document.getElementById('formActions').style.display = 'block';
+        document.querySelector('.btn-edit').style.display = 'none';
+    }
+
+    function cancelEdit() {
+        document.querySelectorAll('.form-control-custom').forEach(input => {
+            input.disabled = true;
+        });
+        document.getElementById('formActions').style.display = 'none';
+        document.querySelector('.btn-edit').style.display = 'inline-block';
+    }
+
+    // Tab switching with hash support
+    function switchTab(tabId) {
+        // Remove active class from all menu items and tabs
+        document.querySelectorAll('.menu-item').forEach(mi => mi.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+
+        // Add active class to clicked item and corresponding tab
+        const menuItem = document.querySelector('.menu-item[data-tab="' + tabId + '"]');
+        const tabContent = document.getElementById('tab-' + tabId);
+
+        if (menuItem && tabContent) {
+            menuItem.classList.add('active');
+            tabContent.classList.add('active');
+        }
+    }
+
+    // Handle menu item clicks
+    document.querySelectorAll('.menu-item[data-tab]').forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+            const tabId = this.dataset.tab;
+            window.location.hash = tabId;
+            switchTab(tabId);
+        });
+    });
+
+    // Handle hash change (browser back/forward, direct link)
+    window.addEventListener('hashchange', function () {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            switchTab(hash);
+        }
+    });
+
+    // Load correct tab on page load
+    window.addEventListener('DOMContentLoaded', function () {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            switchTab(hash);
+        } else {
+            // Default to first tab
+            switchTab('thongtin');
+        }
+    });
+
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = input.nextElementSibling;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>

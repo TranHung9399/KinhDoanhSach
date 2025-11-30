@@ -1,0 +1,429 @@
+﻿@model banSach.Models.DonDatHang
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <h1><i class="fas fa-file-invoice"></i> Chi tiết đơn hàng</h1>
+        <div class="page-actions">
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <a href="@Url.Action("Invoice", new { id = Model.MaDonHang })" class="btn btn-success">
+                <i class="fas fa-print"></i> In hóa đơn
+            </a>
+        </div>
+    </div>
+
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "HomeAdmin")">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index")">Đơn đặt hàng</a></li>
+        <li class="breadcrumb-item active">@Model.MaDonHang</li>
+    </ol>
+
+    @if (Model.ThanhToans.Any(tt => tt.TrangThaiThanhToan == "Đã thanh toán"))
+    {
+        <div class="alert alert-success d-flex align-items-center payment-status-alert" role="alert">
+            <div class="me-3 alert-icon">
+                <i class="fas fa-shield-check"></i>
+            </div>
+            <div>
+                <strong>Thanh toán thành công.</strong> Đơn hàng đã được xác nhận trạng thái <span class="badge bg-light text-success">Đã thanh toán</span>. Vui lòng tiếp tục xử lý giao hàng.
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Customer Info -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-user"></i> Thông tin khách hàng
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-receipt"></i> Mã đơn hàng:</strong></p>
+                            <p class="text-muted">@Model.MaDonHang</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-calendar"></i> Ngày đặt:</strong></p>
+                            <p class="text-muted">@(Model.NgayDat?.ToString("dd/MM/yyyy HH:mm") ?? "")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-user-circle"></i> Họ tên:</strong></p>
+                            <p class="text-muted">@Model.HoTen</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-phone"></i> Số điện thoại:</strong></p>
+                            <p class="text-muted">@Model.SoDienThoai</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-envelope"></i> Email:</strong></p>
+                            <p class="text-muted">@Model.Email</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-credit-card"></i> Phương thức thanh toán:</strong></p>
+                            <p class="text-muted">
+                                @if (Model.PhuongThucThanhToan == 1)
+                                {
+                                    <span><i class="fas fa-money-bill-wave"></i> Thanh toán khi nhận hàng (COD)</span>
+                                }
+                                else if (Model.PhuongThucThanhToan == 2)
+                                {
+                                    <span><i class="fab fa-cc-visa"></i> VNPay</span>
+                                }
+                                else if (Model.PhuongThucThanhToan == 3)
+                                {
+                                    <span><i class="fas fa-wallet"></i> MoMo</span>
+                                }
+                                else
+                                {
+                                    <span>Không xác định</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-12">
+                            <p><strong><i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng:</strong></p>
+                            <p class="text-muted">@Model.DiaChi</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-info-circle"></i> Trạng thái đơn hàng:</strong></p>
+                            <p>
+                                @if (Model.TrangThai == "Chờ xác nhận")
+                                {
+                                    <span class="badge bg-warning">@Model.TrangThai</span>
+                                }
+                                else if (Model.TrangThai == "Đã xác nhận")
+                                {
+                                    <span class="badge bg-info">@Model.TrangThai</span>
+                                }
+                                else if (Model.TrangThai == "Đang giao hàng" || Model.TrangThai == "Đang giao")
+                                {
+                                    <span class="badge bg-primary">@Model.TrangThai</span>
+                                }
+                                else if (Model.TrangThai == "Hoàn tất" || Model.TrangThai == "Đã giao")
+                                {
+                                    <span class="badge bg-success">@Model.TrangThai</span>
+                                }
+                                else if (Model.TrangThai == "Đã hủy")
+                                {
+                                    <span class="badge bg-danger">@Model.TrangThai</span>
+                                }
+                            </p>
+                        </div>
+                        @{
+                            var thanhToan = Model.ThanhToans.FirstOrDefault();
+                            if (thanhToan != null)
+                            {
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-money-check-alt"></i> Trạng thái thanh toán:</strong></p>
+                                    <p>
+                                        @if (thanhToan.TrangThaiThanhToan == "Đã thanh toán")
+                                        {
+                                            <span class="badge bg-success">@thanhToan.TrangThaiThanhToan</span>
+                                        }
+                                        else if (thanhToan.TrangThaiThanhToan == "Chờ thanh toán")
+                                        {
+                                            <span class="badge bg-warning">@thanhToan.TrangThaiThanhToan</span>
+                                        }
+                                        else if (thanhToan.TrangThaiThanhToan == "Thất bại")
+                                        {
+                                            <span class="badge bg-danger">@thanhToan.TrangThaiThanhToan</span>
+                                        }
+                                        else if (thanhToan.TrangThaiThanhToan == "Đã hủy")
+                                        {
+                                            <span class="badge bg-secondary">@thanhToan.TrangThaiThanhToan</span>
+                                        }
+                                    </p>
+                                </div>
+                                if (!string.IsNullOrEmpty(thanhToan.MaGiaoDich))
+                                {
+                                    <div class="col-12">
+                                        <p><strong><i class="fas fa-receipt"></i> Mã giao dịch:</strong></p>
+                                        <p class="text-muted"><code>@thanhToan.MaGiaoDich</code></p>
+                                    </div>
+                                }
+                                if (thanhToan.NgayThanhToan.HasValue)
+                                {
+                                    <div class="col-12">
+                                        <p><strong><i class="fas fa-calendar-check"></i> Ngày thanh toán:</strong></p>
+                                        <p class="text-muted">@thanhToan.NgayThanhToan.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products List -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-box"></i> Chi tiết sản phẩm (@Model.ChiTietDonHangs.Count sản phẩm)
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tên sách</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Đơn giá</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int stt = 1;
+                                    decimal tongTienHang = 0;
+                                }
+                                @foreach (var item in Model.ChiTietDonHangs)
+                                {
+                                    var sach = item.Sach;
+                                    if (sach != null)
+                                    {
+                                        var thanhTien = (item.SoLuong ?? 0) * (item.DonGia ?? 0);
+                                        tongTienHang += thanhTien;
+                                        <tr>
+                                            <td>@stt</td>
+                                            <td>
+                                                <strong>@sach.TenSach</strong>
+                                                @if (sach.VietSaches != null && sach.VietSaches.Any())
+                                                {
+                                                    <br />
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-user-edit"></i>
+                                                        @string.Join(", ", sach.VietSaches.Select(v => v.TacGia.TenTG))
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td class="text-center">@item.SoLuong</td>
+                                            <td class="text-end">@String.Format("{0:#,##0}₫", item.DonGia)</td>
+                                            <td class="text-end"><strong>@String.Format("{0:#,##0}₫", thanhTien)</strong></td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-calculator"></i> Tổng kết đơn hàng
+                </div>
+                <div class="card-body">
+                    @{
+                        var tienHang = Model.ChiTietDonHangs.Sum(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0));
+                        var phiVanChuyen = Model.PhiVanChuyen ?? 0;
+                        decimal giamGia = 0;
+                        
+                        // Lấy thông tin mã giảm giá
+                        var suDungMGG = ViewBag.SuDungMaGiamGia as banSach.Models.SuDungMaGiamGia;
+                        if (suDungMGG != null)
+                        {
+                            giamGia = suDungMGG.SoTienGiam;
+                        }
+
+                        decimal tongCong;
+                        if (Model.TongTien.HasValue && Model.TongTien.Value > 0)
+                        {
+                            tongCong = Model.TongTien.Value;
+                        }
+                        else
+                        {
+                            tongCong = tienHang + phiVanChuyen - giamGia;
+                        }
+                    }
+
+                    <div class="summary-row">
+                        <span><i class="fas fa-box"></i> Tạm tính (Tiền hàng):</span>
+                        <strong>@String.Format("{0:#,##0}₫", tienHang)</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span><i class="fas fa-shipping-fast"></i> Phí vận chuyển:</span>
+                        @if (phiVanChuyen > 0)
+                        {
+                            <strong>@String.Format("{0:#,##0}₫", phiVanChuyen)</strong>
+                        }
+                        else
+                        {
+                            <strong class="text-success">Miễn phí</strong>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.MaGiamGia) && giamGia > 0)
+                    {
+                        <div class="summary-row text-danger">
+                            <span>
+                                <i class="fas fa-tag"></i> Giảm giá 
+                                @if (suDungMGG != null && suDungMGG.MaGiamGia != null)
+                                {
+                                    <span>(@suDungMGG.MaGiamGia.MaCode)</span>
+                                }
+                            </span>
+                            <strong>-@String.Format("{0:#,##0}₫", giamGia)</strong>
+                        </div>
+                        <div class="summary-row">
+                            <small class="text-muted">
+                                <i class="fas fa-barcode"></i> Mã: <code>@Model.MaGiamGia</code>
+                            </small>
+                        </div>
+                    }
+
+                    <hr class="my-3" />
+
+                    <div class="summary-row total">
+                        <span><i class="fas fa-money-bill-wave"></i> <strong>TỔNG CỘNG:</strong></span>
+                        <strong class="text-primary" style="font-size: 24px;">
+                            @String.Format("{0:#,##0}₫", tongCong)
+                        </strong>
+                    </div>
+
+                    @if (Model.GhiChu != null && !string.IsNullOrWhiteSpace(Model.GhiChu))
+                    {
+                        <hr class="my-3" />
+                        <div class="alert alert-info mb-0">
+                            <strong><i class="fas fa-sticky-note"></i> Ghi chú:</strong><br />
+                            @Model.GhiChu
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Order Actions -->
+            @if (Model.TrangThai == "Chờ xác nhận" || Model.TrangThai == "Đã xác nhận" || Model.TrangThai == "Đang giao hàng")
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="fas fa-cogs"></i> Thao tác đơn hàng
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("CapNhatTrangThai", "DonDatHangs", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("maDonHang", Model.MaDonHang)
+
+                            <div class="mb-3">
+                                <label class="form-label"><strong>Cập nhật trạng thái:</strong></label>
+                                <select name="trangThai" class="form-select">
+                                    <option value="Chờ xác nhận" selected="@(Model.TrangThai == "Chờ xác nhận")">Chờ xác nhận</option>
+                                    <option value="Đã xác nhận" selected="@(Model.TrangThai == "Đã xác nhận")">Đã xác nhận</option>
+                                    <option value="Đang giao hàng" selected="@(Model.TrangThai == "Đang giao hàng")">Đang giao hàng</option>
+                                    <option value="Đã giao">Đã giao</option>
+                                    <option value="Hoàn tất">Hoàn tất</option>
+                                    <option value="Đã hủy">Đã hủy</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-check-circle"></i> Cập nhật trạng thái
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 28px;
+    }
+
+    .page-actions .btn {
+        margin-left: 10px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px dashed #dee2e6;
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-row.total {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    code {
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #d63384;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    .card-header {
+        font-weight: 600;
+        padding: 15px 20px;
+    }
+
+    .card-body p {
+        margin-bottom: 8px;
+    }
+
+    .card-body p strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #495057;
+    }
+
+    .badge {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .payment-status-alert {
+        border-left: 6px solid #198754;
+        box-shadow: 0 3px 12px rgba(25, 135, 84, 0.15);
+    }
+
+    .payment-status-alert .alert-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(25, 135, 84, 0.1);
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+</style>

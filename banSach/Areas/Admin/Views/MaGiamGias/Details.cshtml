@@ -1,0 +1,286 @@
+﻿@model banSach.Models.MaGiamGia
+
+@{
+    ViewBag.Title = "Chi tiết Mã giảm giá";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var now = DateTime.Now;
+}
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-info-circle"></i> Chi tiết Mã giảm giá</h1>
+        <div class="page-actions">
+            <a href="@Url.Action("Edit", new { id = Model.MaCode })" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Chỉnh sửa
+            </a>
+            <a href="@Url.Action("Delete", new { id = Model.MaCode })" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Xóa
+            </a>
+        </div>
+    </div>
+
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "HomeAdmin")">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index")">Mã giảm giá</a></li>
+        <li class="breadcrumb-item active">Chi tiết</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Main Info Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-ticket-alt"></i> Thông tin mã giảm giá
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="text-muted">
+                                <i class="fas fa-barcode"></i> Mã Code
+                            </label>
+                            <div class="display-value">
+                                <h4 class="text-primary mb-0">
+                                    <strong>@Model.MaCode</strong>
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="text-muted">
+                                <i class="fas fa-tag"></i> Tên chương trình
+                            </label>
+                            <div class="display-value">
+                                <h5>@Model.TenChuongTrinh</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="text-muted">
+                                <i class="fas fa-percent"></i> Phần trăm giảm
+                            </label>
+                            <div class="display-value">
+                                @if (Model.PhanTramGiam.HasValue && Model.PhanTramGiam.Value > 0)
+                                {
+                                    <span class="badge badge-success" style="font-size: 1.2rem; padding: 0.5rem 1rem;">
+                                        <i class="fas fa-percent"></i> @Model.PhanTramGiam%
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Không áp dụng</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">
+                                <i class="fas fa-money-bill-wave"></i> Số tiền giảm
+                            </label>
+                            <div class="display-value">
+                                @if (Model.SoTienGiam.HasValue && Model.SoTienGiam.Value > 0)
+                                {
+                                    <span class="badge badge-info" style="font-size: 1.2rem; padding: 0.5rem 1rem;">
+                                        <i class="fas fa-money-bill-wave"></i> @Model.SoTienGiam.Value.ToString("N0")đ
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Không áp dụng</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="text-muted">
+                                <i class="fas fa-calendar-check"></i> Ngày bắt đầu
+                            </label>
+                            <div class="display-value">
+                                <h6>@(Model.NgayBatDau.HasValue ? Model.NgayBatDau.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa xác định")</h6>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">
+                                <i class="fas fa-calendar-times"></i> Ngày kết thúc
+                            </label>
+                            <div class="display-value">
+                                <h6>@(Model.NgayKetThuc.HasValue ? Model.NgayKetThuc.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa xác định")</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="text-muted">
+                                <i class="fas fa-users"></i> Tổng số lượng
+                            </label>
+                            <div class="display-value">
+                                <h4 class="text-primary mb-0">@(Model.SoLuongMa ?? 0)</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted">
+                                <i class="fas fa-check-circle"></i> Đã sử dụng
+                            </label>
+                            <div class="display-value">
+                                <h4 class="text-success mb-0">@(Model.DaSuDung ?? 0)</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted">
+                                <i class="fas fa-clipboard-list"></i> Còn lại
+                            </label>
+                            <div class="display-value">
+                                <h4 class="text-warning mb-0">@((Model.SoLuongMa ?? 0) - (Model.DaSuDung ?? 0))</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress" style="height: 25px;">
+                        @{
+                            var daSuDung = Model.DaSuDung ?? 0;
+                            var soLuongMa = Model.SoLuongMa ?? 0;
+                            var percentage = soLuongMa > 0 ? (daSuDung * 100.0 / soLuongMa) : 0;
+                        }
+                        <div class="progress-bar @(percentage >= 100 ? "bg-danger" : percentage >= 80 ? "bg-warning" : "bg-success")"
+                             role="progressbar"
+                             style="width: @(percentage)%"
+                             aria-valuenow="@daSuDung"
+                             aria-valuemin="0"
+                             aria-valuemax="@soLuongMa">
+                            <strong>@percentage.ToString("0.00")% đã sử dụng</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Status Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Trạng thái
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    @{
+                        var status = "";
+                        var statusClass = "";
+                        var statusIcon = "";
+                        var statusDescription = "";
+
+                        if (Model.NgayKetThuc < now)
+                        {
+                            status = "Đã hết hạn";
+                            statusClass = "danger";
+                            statusIcon = "ban";
+                            statusDescription = "Mã giảm giá này đã hết thời hạn sử dụng";
+                        }
+                        else if (Model.NgayBatDau > now)
+                        {
+                            status = "Sắp diễn ra";
+                            statusClass = "warning";
+                            statusIcon = "clock";
+                            statusDescription = "Mã giảm giá chưa đến thời gian áp dụng";
+                        }
+                        else if ((Model.DaSuDung ?? 0) >= (Model.SoLuongMa ?? 0))
+                        {
+                            status = "Hết lượt sử dụng";
+                            statusClass = "danger";
+                            statusIcon = "times-circle";
+                            statusDescription = "Đã hết số lượng mã có thể sử dụng";
+                        }
+                        else
+                        {
+                            status = "Đang hoạt động";
+                            statusClass = "success";
+                            statusIcon = "check-circle";
+                            statusDescription = "Mã giảm giá đang có thể sử dụng";
+                        }
+                    }
+
+                    <div class="status-indicator-large mb-3">
+                        <i class="fas fa-@statusIcon fa-5x text-@statusClass"></i>
+                    </div>
+                    <h3 class="text-@statusClass mb-2">@status</h3>
+                    <p class="text-muted">@statusDescription</p>
+
+                    @if (Model.NgayBatDau.HasValue && Model.NgayKetThuc.HasValue)
+                    {
+                        var totalDays = (Model.NgayKetThuc.Value - Model.NgayBatDau.Value).TotalDays;
+                        <hr />
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-hourglass-half"></i>
+                                Thời gian chương trình: <strong>@totalDays.ToString("0") ngày</strong>
+                            </small>
+                        </div>
+
+                        if (Model.NgayBatDau.Value <= now && Model.NgayKetThuc.Value >= now)
+                        {
+                            var remainingDays = (Model.NgayKetThuc.Value - now).TotalDays;
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i>
+                                    Còn lại: <strong class="text-warning">@remainingDays.ToString("0") ngày</strong>
+                                </small>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cog"></i> Thao tác
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Edit", new { id = Model.MaCode })" class="btn btn-primary btn-block">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a href="@Url.Action("Delete", new { id = Model.MaCode })" class="btn btn-danger btn-block">
+                            <i class="fas fa-trash"></i> Xóa
+                        </a>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-block">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .display-value {
+            padding: 10px 0;
+            border-bottom: 1px solid #e3e6f0;
+        }
+
+        .status-indicator-large {
+            padding: 20px;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+}

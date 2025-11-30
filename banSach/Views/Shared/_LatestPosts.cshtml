@@ -1,0 +1,331 @@
+﻿@*
+    Partial View for Latest Blog Posts Section
+*@
+
+<section class="latest-posts-section">
+    <div class="container">
+        <h2 class="section-title">BÀI VIẾT MỚI</h2>
+        <div class="posts-slider-container">
+            <div class="posts-slider">
+                <!-- Post 1 -->
+                <div class="post-card">
+                    <div class="post-image-wrapper">
+                        <a href="#">
+                            <img src="~/img/sach/beatless.jpg" alt="BEATLESS" class="post-image">
+                            <div class="post-date-overlay">19/11/2025</div>
+                        </a>
+                    </div>
+                    <div class="post-content">
+                        <h3 class="post-title">BEATLESS - Một Gợi Mở Đáng Chú Ý Về Chỗ Đứng Của Con Người Khi Công Nghệ Phát Triển</h3>
+                        <p class="post-excerpt">
+                            Năm 2022, OpenAI ra mắt Chat GPT. Cuối năm 2023, DeepSeek xuất hiện, trở thành “đối thủ” của Chat GPT và người dùng lại có thêm một lựa chọn nữa. Mùa xuân năm 2025, Trung Quốc đ...
+                        </p>
+                        <a href="#" class="read-more-link">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+
+                <!-- Post 2 -->
+                <div class="post-card">
+                    <div class="post-image-wrapper">
+                        <a href="#">
+                            <img src="~/img/sach/camtu.jpg" alt="Cấm Tụng" class="post-image">
+                            <div class="post-date-overlay">21/11/2025</div>
+                        </a>
+                    </div>
+                    <div class="post-content">
+                        <h3 class="post-title">Độc Giả Nói Gì Về Tầm Tang: Xác Chết Không Đầu, Phòng Kín 4 Lớp, 37 Bí Ẩn, Cần 1 Đáp Án Nhưng Lại Có Nhiều Hơn 1 Sự Thật?</h3>
+                        <p class="post-excerpt">
+                            Như một màn ảo thuật, một trò diễn xiếc, một cú lộn nhào bất thình lình ngay khi khán giả ngỡ bức rèm sân khấu đã buông, tầng tầng lớp lớp âm mưu và giả thuyết được đặt ra trong...
+                        </p>
+                        <a href="#" class="read-more-link">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+
+                <!-- Post 3 -->
+                <div class="post-card">
+                    <div class="post-image-wrapper">
+                        <a href="#">
+                            <img src="~/img/sach/trangian.jpg" alt="Trần Gian" class="post-image">
+                            <div class="post-date-overlay">10/10/2025</div>
+                        </a>
+                    </div>
+                    <div class="post-content">
+                        <h3 class="post-title">Trần Gian Ở Lại Và Những Luyến Lưu Về Tình Yêu Nơi Trần Thế</h3>
+                        <p class="post-excerpt">
+                            Là một tập truyện ngắn được viết rải rác trong nhiều năm, tập truyện ngắn mới nhất của Giác - Trần Gian Ở Lại đã xuất sắc mô tả vẻ muôn hình vạn trạng của tình yêu và ...
+                        </p>
+                        <a href="#" class="read-more-link">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                 <!-- Post 4 (Clone of 1 for infinite loop) -->
+                <div class="post-card">
+                    <div class="post-image-wrapper">
+                        <a href="#">
+                            <img src="~/img/sach/xutuyet.jpg" alt="BEATLESS" class="post-image">
+                            <div class="post-date-overlay">5/5/2025</div>
+                        </a>
+                    </div>
+                    <div class="post-content">
+                        <h3 class="post-title">Xứ Tuyết - cực hạn của “cái đẹp hư vô, cái đẹp thanh khiết và cái đẹp bi thiết”</h3>
+                        <p class="post-excerpt">
+                            Xứ Tuyết là tiểu thuyết dạng vừa đầu tiên của Kawabata Yasunari, cũng là tác phẩm đại diện cho chủ nghĩa duy mỹ ở ông. Nội dung  Xứ Tuyết, nếu tường th...
+                        </p>
+                        <a href="#" class="read-more-link">Đọc tiếp <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+            <!-- Navigation Arrows -->
+            <button class="slider-arrow prev-arrow"><i class="fas fa-chevron-left"></i></button>
+            <button class="slider-arrow next-arrow"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+
+<style>
+    .latest-posts-section {
+        padding: 60px 0;
+        background-color: #f9f9f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .latest-posts-section .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 40px;
+        color: #333;
+        position: relative;
+        display: inline-block;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background-color: #07a54b;
+            margin: 10px auto 0;
+        }
+
+    .posts-slider-container {
+        overflow: hidden;
+        position: relative; /* Needed for arrow positioning */
+    }
+
+    .posts-slider {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+
+    .post-card {
+        flex: 0 0 calc(100% / 3);
+        padding: 0 15px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-self: stretch;
+    }
+
+    .post-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        background-color: #f0f0f0; /* Thêm màu nền để thấy rõ khoảng trống nếu có */
+    }
+
+    .post-image {
+        width: 100%;
+        height: auto; /* ✅ Chiều cao tự động theo tỷ lệ ảnh */
+        object-fit: contain; /* ✅ Hiển thị toàn bộ ảnh, không cắt xén */
+        transition: transform 0.4s ease;
+        display: block; /* Đảm bảo ảnh là block-level element */
+    }
+
+    .post-card:hover .post-image {
+        transform: scale(1.05);
+    }
+
+    .post-date-overlay {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .post-content {
+        background-color: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .post-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+
+    .post-excerpt {
+        font-size: 0.95rem;
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .read-more-link {
+        color: #667eea;
+        font-weight: bold;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+        .read-more-link:hover {
+            color: #07a54b;
+        }
+
+    .read-more-link i {
+        margin-left: 5px;
+    }
+
+    .slider-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(108, 117, 125, 0.7);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        z-index: 10;
+    }
+
+    .slider-arrow:hover {
+        background-color: rgba(52, 58, 64, 0.9);
+    }
+
+    .prev-arrow {
+        left: 25px;
+    }
+
+    .next-arrow {
+        right: 25px;
+    }
+
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .post-card {
+            flex: 0 0 50%;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .post-card {
+            flex: 0 0 100%;
+        }
+        .posts-slider {
+             /* On smaller screens, we might want to adjust the logic if it's a single-item slider */
+        }
+        .slider-arrow {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+        .prev-arrow { left: 15px; }
+        .next-arrow { right: 15px; }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const slider = document.querySelector('.posts-slider');
+    const prevButton = document.querySelector('.prev-arrow');
+    const nextButton = document.querySelector('.next-arrow');
+    const postCards = document.querySelectorAll('.post-card');
+    
+    if (!slider || !prevButton || !nextButton || postCards.length === 0) return;
+
+    let currentIndex = 0;
+    let itemsPerScreen = 3; // Default for desktop
+
+    function updateItemsPerScreen() {
+        if (window.innerWidth <= 768) {
+            itemsPerScreen = 1;
+        } else if (window.innerWidth <= 992) {
+            itemsPerScreen = 2;
+        } else {
+            itemsPerScreen = 3;
+        }
+    }
+
+    function updateSlider() {
+        const totalItems = postCards.length;
+        // The total number of "pages" or "slides"
+        const totalSlides = Math.ceil(totalItems / itemsPerScreen);
+
+        // Prevent index from going out of bounds
+        if (currentIndex >= totalSlides) {
+            currentIndex = totalSlides - 1;
+        }
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        }
+
+        const cardWidth = slider.parentElement.offsetWidth / itemsPerScreen;
+        slider.style.transform = `translateX(-${currentIndex * cardWidth * itemsPerScreen}px)`;
+
+        // Show/hide arrows
+        prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
+        nextButton.style.display = currentIndex >= totalSlides - 1 ? 'none' : 'block';
+    }
+
+    nextButton.addEventListener('click', function () {
+        const totalItems = postCards.length;
+        const totalSlides = Math.ceil(totalItems / itemsPerScreen);
+        if (currentIndex < totalSlides - 1) {
+            currentIndex++;
+            updateSlider();
+        }
+    });
+
+    prevButton.addEventListener('click', function () {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateSlider();
+        }
+    });
+
+    // Recalculate on window resize
+    window.addEventListener('resize', () => {
+        updateItemsPerScreen();
+        updateSlider();
+    });
+    
+    // Initial setup
+    updateItemsPerScreen();
+    updateSlider();
+});
+</script>

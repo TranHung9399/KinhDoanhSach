@@ -1,0 +1,302 @@
+﻿@model banSach.Models.CheckoutViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán - Hiệu Sách Con Cú Vọ</title>
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/checkout.css" />
+</head>
+<body>
+    <div class="container my-4">
+        <div class="checkout-wrapper">
+            <!-- Logo and Header -->
+
+            @using (Html.BeginForm("DatHang", "GioHang", FormMethod.Post, new { @id = "checkoutForm" }))
+            {
+                <div class="row">
+                    <!-- Left Side - Shipping Information -->
+                    <div class="col-lg-7">
+                        <div class="checkout-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-shipping-fast me-2"></i>Thông tin giao hàng
+                            </h5>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                    <input type="text" name="HoTen" class="form-control" placeholder="Nhập họ và tên" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                    <input type="tel" name="SoDienThoai" class="form-control" placeholder="Nhập số điện thoại" required />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="Email" class="form-control" placeholder="Nhập email để nhận thông tin đơn hàng" required />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Quốc gia <span class="text-danger">*</span></label>
+                                    <select name="QuocGia" id="quocGia" class="form-select" required>
+                                        <option value="Việt Nam" selected>Việt Nam</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                                    <select name="TinhThanhPhoCode" id="tinhThanhPho" class="form-select" required>
+                                        <option value="">Chọn Tỉnh/TP</option>
+                                    </select>
+                                    <!-- Hidden field for province name -->
+                                    <input type="hidden" name="TinhThanhPho" id="hiddenTinhThanhPho" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Quận/Huyện <span class="text-danger">*</span></label>
+                                    <select name="QuanHuyenCode" id="quanHuyen" class="form-select" disabled required>
+                                        <option value="">Chọn Quận/Huyện</option>
+                                    </select>
+                                    <!-- Hidden field for district name -->
+                                    <input type="hidden" name="QuanHuyen" id="hiddenQuanHuyen" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Phường/Xã <span class="text-danger">*</span></label>
+                                    <select name="PhuongXaCode" id="phuongXa" class="form-select" disabled required>
+                                        <option value="">Chọn Phường/Xã</option>
+                                    </select>
+                                    <!-- Hidden field for ward name -->
+                                    <input type="hidden" name="PhuongXa" id="hiddenPhuongXa" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Địa chỉ chi tiết <span class="text-danger">*</span></label>
+                                    <textarea name="DiaChiChiTiet" class="form-control" rows="2" placeholder="Số nhà, tên đường..." required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Method -->
+                        <div class="checkout-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-truck me-2"></i>Phương thức vận chuyển
+                            </h5>
+                            <div class="shipping-method-group">
+                                <div class="form-check shipping-option">
+                                    <input class="form-check-input" type="radio" name="PhuongThucGiaoHang" id="shipStandard" value="1" checked>
+                                    <label class="form-check-label w-100" for="shipStandard">
+                                        <div class="d-flex justify-content-between">
+                                            <span><strong>Giao hàng tiêu chuẩn</strong><br><small class="text-muted">3-5 ngày làm việc</small></span>
+                                            <span class="text-success fw-bold"><span id="phiVanChuyenText">30,000đ</span></span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="form-check shipping-option">
+                                    <input class="form-check-input" type="radio" name="PhuongThucGiaoHang" id="shipExpress" value="2">
+                                    <label class="form-check-label w-100" for="shipExpress">
+                                        <div class="d-flex justify-content-between">
+                                            <span><strong>Giao hàng nhanh</strong><br><small class="text-muted">1-2 ngày làm việc</small></span>
+                                            <span class="text-success fw-bold">50,000đ</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="checkout-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-credit-card me-2"></i>Phương thức thanh toán
+                            </h5>
+                            <div class="payment-method-group">
+                                <div class="form-check payment-option">
+                                    <input class="form-check-input" type="radio" name="PhuongThucThanhToan" id="paymentCOD" value="1" checked>
+                                    <label class="form-check-label w-100" for="paymentCOD">
+                                        <i class="fas fa-money-bill-wave me-2 text-success"></i>
+                                        <strong>Thanh toán khi nhận hàng (COD)</strong>
+                                        <br><small class="text-muted">Thanh toán bằng tiền mặt khi nhận hàng</small>
+                                    </label>
+                                </div>
+                                <div class="form-check payment-option">
+                                    <input class="form-check-input" type="radio" name="PhuongThucThanhToan" id="paymentVNPay" value="2">
+                                    <label class="form-check-label w-100" for="paymentVNPay">
+                                        <i class="fas fa-university me-2 text-primary"></i>
+                                        <strong>Thanh toán qua VNPay</strong>
+                                        <br><small class="text-muted">Thanh toán qua cổng VNPay (ATM/Visa/MasterCard)</small>
+                                    </label>
+                                </div>
+                                <div class="form-check payment-option">
+                                    <input class="form-check-input" type="radio" name="PhuongThucThanhToan" id="paymentMomo" value="3">
+                                    <label class="form-check-label w-100" for="paymentMomo">
+                                        <i class="fas fa-wallet me-2 text-danger"></i>
+                                        <strong>Thanh toán qua Momo</strong>
+                                        <br><small class="text-muted">Thanh toán qua ví điện tử Momo</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Electronic Invoice -->
+                        <div class="checkout-section">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="YeuCauHoaDonDienTu" id="invoiceCheck" value="true">
+                                <input type="hidden" name="YeuCauHoaDonDienTu" value="false">
+                                <label class="form-check-label" for="invoiceCheck">
+                                    <i class="fas fa-file-invoice me-2"></i>Yêu cầu xuất hóa đơn điện tử
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side - Order Summary -->
+                    <div class="col-lg-5">
+                        <div class="order-summary-wrapper sticky-top">
+                            <div class="order-summary">
+                                <h5 class="section-title">
+                                    <i class="fas fa-shopping-cart me-2"></i>Đơn hàng (@Model.CartItems.Count sản phẩm)
+                                </h5>
+
+                                <div class="order-items">
+                                    @foreach (var item in Model.CartItems)
+                                    {
+                                        <div class="order-item">
+                                            <div class="item-image-wrapper">
+                                                <img src="~/img/sach/@item.Sach.Hinh" class="item-image" alt="@item.Sach.TenSach" />
+                                                <span class="item-quantity">@item.SoLuong</span>
+                                            </div>
+                                            <div class="item-details">
+                                                <div class="item-title">@item.Sach.TenSach</div>
+                                                @if (item.Sach.GiaChietKhau.HasValue && item.Sach.GiaBan.HasValue && item.Sach.GiaChietKhau.Value < item.Sach.GiaBan.Value)
+                                                {
+                                                    var percentDiscount = Math.Round(100 * (item.Sach.GiaBan.Value - item.Sach.GiaChietKhau.Value) / item.Sach.GiaBan.Value, 0);
+                                                    <div class="item-discount">-@percentDiscount%</div>
+                                                }
+                                            </div>
+                                            <div class="item-price">@String.Format("{0:#,##0}đ", (item.DonGia ?? 0) * (item.SoLuong ?? 0))</div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Discount Code -->
+                                <div class="discount-section">
+                                    <div class="input-group">
+                                        <input type="text" id="discountCode" class="form-control" placeholder="Nhập mã giảm giá" />
+                                        <button class="btn btn-outline-primary" type="button" id="applyDiscountBtn">
+                                            <i class="fas fa-tag me-1"></i>Áp dụng
+                                        </button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnShowDiscountPopup">
+                                            <i class="fas fa-ticket-alt me-1"></i>Chọn mã giảm giá
+                                        </button>
+                                    </div>
+                                    <div id="discountMessage" class="mt-2"></div>
+                                </div>
+
+                                <!-- Price Summary -->
+                                <div class="price-summary">
+                                    <div class="price-row">
+                                        <span>Tạm tính</span>
+                                        <span id="subtotal">@String.Format("{0:#,##0}đ", Model.CartItems.Sum(i => (i.SoLuong ?? 0) * (i.DonGia ?? 0)))</span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span>Phí vận chuyển</span>
+                                        <span id="shippingFee">30,000đ</span>
+                                    </div>
+                                    <div class="price-row discount-row" id="discountRow" style="display: none;">
+                                        <span>Giảm giá</span>
+                                        <span class="text-danger" id="discountAmount">-0đ</span>
+                                    </div>
+                                    <hr />
+                                    <div class="price-row total-row">
+                                        <span>Tổng cộng</span>
+                                        <span id="totalAmount">@String.Format("{0:#,##0}đ", Model.CartItems.Sum(i => (i.SoLuong ?? 0) * (i.DonGia ?? 0)) + 30000)</span>
+                                    </div>
+                                </div>
+
+                                <!-- Order Button -->
+                                <button type="submit" class="btn btn-primary btn-lg w-100 btn-order">
+                                    <i class="fas fa-check-circle me-2"></i>Đặt Hàng
+                                </button>
+
+                                <!-- Back to Cart -->
+                                <div class="text-center mt-3">
+                                    <a href="@Url.Action("Index", "GioHang")" class="back-to-cart">
+                                        <i class="fas fa-arrow-left me-1"></i>Quay lại giỏ hàng
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden fields for form submission -->
+                <input type="hidden" name="PhiVanChuyen" id="hiddenShippingFee" value="30000" />
+                <input type="hidden" name="MaGiamGia" id="hiddenDiscountCode" value="" />
+                <input type="hidden" name="GiamGia" id="hiddenDiscountAmount" value="0" />
+                <input type="hidden" name="TongTien" id="hiddenTotalAmount" value="@(Model.CartItems.Sum(i => (i.SoLuong ?? 0) * (i.DonGia ?? 0)) + 30000)" />
+            }
+        </div>
+    </div>
+
+    <!-- Discount Code Modal -->
+    <div class="modal fade" id="discountModal" tabindex="-1" aria-labelledby="discountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="discountModalLabel"><i class="fas fa-ticket-alt me-2 text-primary"></i>Mã giảm giá có sẵn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="discountList" class="list-group">
+                        <!-- Discount codes will be loaded here -->
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/Scripts/jquery.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/checkout.js"></script>
+
+    <script>
+        // Add this script to update hidden fields when dropdowns change
+        $(document).ready(function () {
+            $('#tinhThanhPho').change(function () {
+                var selectedText = $(this).find('option:selected').text();
+                $('#hiddenTinhThanhPho').val(selectedText);
+            });
+
+            $('#quanHuyen').change(function () {
+                var selectedText = $(this).find('option:selected').text();
+                $('#hiddenQuanHuyen').val(selectedText);
+            });
+
+            $('#phuongXa').change(function () {
+                var selectedText = $(this).find('option:selected').text();
+                $('#hiddenPhuongXa').val(selectedText);
+            });
+
+            // Form validation before submit
+            $('#checkoutForm').submit(function (e) {
+                if (!$('#hiddenTinhThanhPho').val() || !$('#hiddenQuanHuyen').val() || !$('#hiddenPhuongXa').val()) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn đầy đủ thông tin Tỉnh/Thành phố, Quận/Huyện, Phường/Xã');
+                    return false;
+                }
+            });
+
+            // Note: Modal discount logic is handled by checkout.js
+            // Do not add duplicate handlers here to prevent conflicts
+        });
+    </script>
+</body>
+</html>

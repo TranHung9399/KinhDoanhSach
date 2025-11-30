@@ -1,0 +1,135 @@
+﻿@model IEnumerable<banSach.Models.DanhGia>
+
+@{
+    ViewBag.Title = "Quản lý đánh giá";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Quản lý đánh giá</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "HomeAdmin")">Trang chủ</a></li>
+        <li class="breadcrumb-item active">Đánh giá</li>
+    </ol>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-search me-1"></i>
+            Tìm kiếm và lọc
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "DanhGias", FormMethod.Get, new { @class = "row g-3" }))
+            {
+                <div class="col-md-4">
+                    @Html.TextBox("searchString", ViewBag.SearchString as string, new { @class = "form-control", @placeholder = "Tìm theo tên sách, khách hàng hoặc bình luận..." })
+                </div>
+                <div class="col-md-3">
+                    @Html.DropDownList("filterBy", new SelectList(new[] {
+                        new { Value = "", Text = "Tất cả đánh giá" },
+                        new { Value = "1", Text = "1 sao" },
+                        new { Value = "2", Text = "2 sao" },
+                        new { Value = "3", Text = "3 sao" },
+                        new { Value = "4", Text = "4 sao" },
+                        new { Value = "5", Text = "5 sao" }
+                    }, "Value", "Text", ViewBag.FilterBy), new { @class = "form-select" })
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <a href="@Url.Action("Statistics", "DanhGias")" class="btn btn-info">
+                        <i class="fas fa-chart-bar"></i> Thống kê
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Reviews Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Danh sách đánh giá (@Model.Count() đánh giá)
+        </div>
+        <div class="card-body">
+            <table id="datatablesSimple" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Mã đánh giá</th>
+                        <th>Sách</th>
+                        <th>Khách hàng</th>
+                        <th>Số sao</th>
+                        <th>Bình luận</th>
+                        <th>Ngày đánh giá</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@Html.DisplayFor(modelItem => item.MaDanhGia)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Sach.TenSach)</td>
+                            <td>@Html.DisplayFor(modelItem => item.KhachHang.HoTen)</td>
+                            <td>
+                                <div class="rating">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= (item.SoSao ?? 0))
+                                        {
+                                            <i class="fas fa-star text-warning"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star text-muted"></i>
+                                        }
+                                    }
+                                    <span class="ms-1">(@(item.SoSao ?? 0)/5)</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@item.BinhLuan">
+                                    @Html.DisplayFor(modelItem => item.BinhLuan)
+                                </div>
+                            </td>
+                            <td>@Html.DisplayFor(modelItem => item.NgayDanhGia)</td>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = item.MaDanhGia })" class="btn btn-sm btn-outline-info" title="Chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="@Url.Action("Delete", new { id = item.MaDanhGia })"
+                                   class="btn btn-sm btn-outline-danger"
+                                   title="Xóa"
+                                   onclick="return confirm('Bạn có chắc muốn xóa sách này?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating {
+        display: flex;
+        align-items: center;
+    }
+
+        .rating i {
+            font-size: 0.9rem;
+        }
+</style>

@@ -1,0 +1,58 @@
+﻿@model List<banSach.Models.Sach>
+@{
+    ViewBag.Title = "Tất cả sách";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="~/Content/css/thongbao1.css" />
+@Html.Partial("_CustomToast")
+<div class="row">
+    @foreach (var sach in Model)
+    {
+        <div class="col-xl-3 col-lg-4 col-md-4 col-12">
+            <div class="single-product">
+                <div class="product-img">
+                    <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })">
+                        <div class="image-frame-product">
+                            <img class="default-img" src="~/img/sach/@sach.Hinh" alt="@sach.TenSach">
+                            <img class="hover-img" src="~/img/sach/@sach.Hinh" alt="@sach.TenSach">
+                        </div>
+                    </a>
+                    <div class="button-head">
+                        <div class="product-action">
+                            <a data-toggle="modal" data-target="#exampleModal" title="Xem thông tin" href="@Url.Action("Details", "Book", new { id = sach.MaSach })">
+                                <i class="bx bx-show"></i><span>Xem nhanh</span>
+                            </a>
+                        </div>
+                        <div class="product-action-2">
+                            <a class="btnAddCart btn btn-success px-4"
+                               data-masach="@sach.MaSach"
+                               data-url="@Url.Action("ThemGiohangAjax", "GioHang")">
+                                THÊM VÀO GIỎ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-content">
+                    <h3>
+                        <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })" class="product-title">@sach.TenSach</a>
+                    </h3>
+                    <div class="product-price">
+                        @if (sach.SoLuongTon != 0 && sach.SoLuongTon != null)
+                        {
+                            <span class="price">@String.Format("{0:#,##0}", sach.GiaBan) VNĐ</span>
+                        }
+                        else
+                        {
+                            <span class="out-of-stock">Hết Hàng</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/book-common.js"></script>
+}

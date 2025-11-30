@@ -1,0 +1,170 @@
+﻿@model banSach.Models.Sach
+
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-4 text-center mb-3">
+            @if (!string.IsNullOrEmpty(Model.Hinh))
+            {
+                <img src="~/img/sach/@Model.Hinh" alt="@Model.TenSach" class="img-fluid rounded shadow" style="max-height: 400px;" />
+            }
+            else
+            {
+                <div class="alert alert-secondary">
+                    <i class="fas fa-image fa-3x"></i>
+                    <p class="mt-2">Chưa có hình ảnh</p>
+                </div>
+            }
+        </div>
+        <div class="col-md-8">
+            <h4 class="text-primary mb-3">@Model.TenSach</h4>
+            
+            <table class="table table-borderless">
+                <tr>
+                    <th style="width: 150px;"><i class="fas fa-barcode"></i> Mã sách:</th>
+                    <td><strong>@Model.MaSach</strong></td>
+                </tr>
+                <tr>
+                    <th><i class="fas fa-tag"></i> Thể loại:</th>
+                    <td>
+                        @if (Model.Loai != null)
+                        {
+                            <span class="badge bg-info">@Model.Loai.TenLoai</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa phân loại</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th><i class="fas fa-building"></i> Nhà xuất bản:</th>
+                    <td>
+                        @if (Model.NhaXuatBan != null)
+                        {
+                            @Model.NhaXuatBan.TenNXB
+                        }
+                        else
+                        {
+                            <span class="text-muted">Không xác định</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th><i class="fas fa-user-edit"></i> Tác giả:</th>
+                    <td>
+                        @if (Model.VietSaches != null && Model.VietSaches.Any())
+                        {
+                            var authors = Model.VietSaches
+                                .Where(v => v.TacGia != null)
+                                .Select(v => v.TacGia.TenTG)
+                                .Where(name => !string.IsNullOrEmpty(name));
+                            
+                            if (authors.Any())
+                            {
+                                @(string.Join(", ", authors))
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa cập nhật</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa cập nhật</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th><i class="fas fa-dollar-sign"></i> Giá bán:</th>
+                    <td><strong class="text-success">@String.Format("{0:#,##0}đ", Model.GiaBan)</strong></td>
+                </tr>
+                @if (Model.GiaChietKhau.HasValue && Model.GiaChietKhau.Value < Model.GiaBan)
+                {
+                    <tr>
+                        <th><i class="fas fa-percent"></i> Giá khuyến mãi:</th>
+                        <td>
+                            <strong class="text-danger">@String.Format("{0:#,##0}đ", Model.GiaChietKhau)</strong>
+                            @{
+                                var discount = Math.Round((decimal)(((Model.GiaBan - Model.GiaChietKhau) / Model.GiaBan) * 100), 0);
+                            }
+                            <span class="badge bg-danger">-@discount%</span>
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <th><i class="fas fa-boxes"></i> Số lượng tồn:</th>
+                    <td>
+                        @if (Model.SoLuongTon > 20)
+                        {
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> @Model.SoLuongTon
+                            </span>
+                        }
+                        else if (Model.SoLuongTon > 0)
+                        {
+                            <span class="badge bg-warning">
+                                <i class="fas fa-exclamation-triangle"></i> @Model.SoLuongTon
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle"></i> Hết hàng
+                            </span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th><i class="fas fa-calendar"></i> Ngày nhập:</th>
+                    <td>
+                        @if (Model.NgayNhapHang.HasValue)
+                        {
+                            @Model.NgayNhapHang.Value.ToString("dd/MM/yyyy")
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa cập nhật</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th><i class="fas fa-info-circle"></i> Trạng thái:</th>
+                    <td>
+                        @if (Model.Status == 1)
+                        {
+                            <span class="badge bg-success">
+                                <i class="fas fa-check"></i> Đang kinh doanh
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-ban"></i> Ngừng kinh doanh
+                            </span>
+                        }
+                    </td>
+                </tr>
+            </table>
+
+            @if (!string.IsNullOrEmpty(Model.MoTa))
+            {
+                <div class="mt-3">
+                    <h5 class="text-secondary"><i class="fas fa-align-left"></i> Mô tả:</h5>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>@Model.MoTa</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times"></i> Đóng
+    </button>
+    <button type="button" class="btn btn-primary" onclick="editBook('@Model.MaSach', '@Url.Action("EditModal", "Sachs")')">
+        <i class="fas fa-edit"></i> Chỉnh sửa
+    </button>
+</div>

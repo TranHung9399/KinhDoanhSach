@@ -1,0 +1,36 @@
+@model banSach.Models.KhachHang
+@{
+    ViewBag.Title = "Chi tiết khách hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+<div class="container my-5">
+    <ul class="list-group">
+        <li class="list-group-item">
+            <h4 class="mb-1">Tên khách hàng: @Html.DisplayFor(model => model.HoTen)</h4>
+            <br />
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="fw-bold">Email</span><br />
+                    @Html.DisplayFor(model => model.Email)
+                </div>
+                <div class="col-md-6">
+                    <span class="fw-bold">Số điện thoại</span><br />
+                    @Html.DisplayFor(model => model.SoDienThoai)
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-md-12">
+                    <span class="fw-bold">Địa chỉ</span><br />
+                    @Html.DisplayFor(model => model.DiaChi)
+                </div>
+            </div>
+        </li>
+    </ul>
+    <div class="my-4" style="width: 100%">
+        <div class="m-auto">
+            @Html.ActionLink("Sửa Thông Tin", "Edit", new { id = Model.MaKH }, new { @class = "btn btn-primary btn-lg" })
+            @Html.ActionLink("Quay Về", "Index", null, new { @class = "btn btn-primary btn-lg" })
+        </div>
+    </div>
+</div> 

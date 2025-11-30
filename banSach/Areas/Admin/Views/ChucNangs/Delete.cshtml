@@ -1,0 +1,64 @@
+﻿@model banSach.Models.ChucNang
+
+@{
+    ViewBag.Title = "Xóa Chức Năng";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Xóa Chức Năng</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "HomeAdmin")">Trang Chủ</a></li>
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "ChucNangs")">Chức Năng</a></li>
+        <li class="breadcrumb-item active">Xóa</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            Xác Nhận Xóa Chức Năng
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa chức năng này không?
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Mã Chức Năng</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.MaChucNang)</dd>
+
+                <dt class="col-sm-3">Tên Chức Năng</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.TenChucNang)</dd>
+
+                <dt class="col-sm-3">Số Quyền Liên Quan</dt>
+                <dd class="col-sm-9">
+                    <span class="badge bg-info">@Model.Quyens.Count</span>
+                </dd>
+            </dl>
+
+            @if (Model.Quyens.Any())
+            {
+                <div class="alert alert-danger mt-3">
+                    <strong>Lưu ý:</strong> Chức năng này đang có @Model.Quyens.Count quyền liên quan. Không thể xóa!
+                </div>
+            }
+
+            @using (Html.BeginForm("Delete", "ChucNangs", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-actions mt-4">
+                    @if (!Model.Quyens.Any())
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    }
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay Lại
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

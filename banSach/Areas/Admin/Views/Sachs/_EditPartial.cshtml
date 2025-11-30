@@ -1,0 +1,86 @@
+﻿@model banSach.Models.Sach
+
+<div class="modal-body">
+    @using (Html.BeginForm("EditModal", "Sachs", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal", id = "editSachForm" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.MaSach)
+
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Mã sách</label>
+                <input type="text" value="@Model.MaSach" class="form-control" disabled />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Tên sách <span class="text-danger">*</span></label>
+                @Html.EditorFor(model => model.TenSach, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.TenSach, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Mô tả</label>
+                @Html.TextAreaFor(model => model.MoTa, new { @class = "form-control", @rows = "4" })
+                @Html.ValidationMessageFor(model => model.MoTa, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Số lượng tồn <span class="text-danger">*</span></label>
+                @Html.EditorFor(model => model.SoLuongTon, new { htmlAttributes = new { @class = "form-control", @type = "number", @min = "0" } })
+                @Html.ValidationMessageFor(model => model.SoLuongTon, "", new { @class = "text-danger" })
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Giá bán <span class="text-danger">*</span></label>
+                @Html.EditorFor(model => model.GiaBan, new { htmlAttributes = new { @class = "form-control", @type = "number", @min = "0" } })
+                @Html.ValidationMessageFor(model => model.GiaBan, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Ngày nhập hàng <span class="text-danger">*</span></label>
+                @Html.TextBoxFor(model => model.NgayNhapHang, "{0:yyyy-MM-dd}", new { @class = "form-control", @type = "date" })
+                @Html.ValidationMessageFor(model => model.NgayNhapHang, "", new { @class = "text-danger" })
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Hình ảnh hiện tại</label>
+                @if (!string.IsNullOrEmpty(Model.Hinh))
+                {
+                    <div class="mb-2">
+                        <img src="~/img/sach/@Model.Hinh" alt="@Model.TenSach" style="max-width: 100px; max-height: 100px;" class="img-thumbnail" />
+                    </div>
+                }
+                <input type="file" name="HinhAnh" id="HinhAnh" class="form-control" accept="image/*" />
+                <small class="text-muted">Để trống nếu không muốn thay đổi</small>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Loại sách <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(model => model.MaLoai, (SelectList)ViewBag.MaLoai, "-- Chọn loại sách --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.MaLoai, "", new { @class = "text-danger" })
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Nhà xuất bản <span class="text-danger">*</span></label>
+                @Html.DropDownListFor(model => model.MaNXB, (SelectList)ViewBag.MaNXB, "-- Chọn nhà xuất bản --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.MaNXB, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    }
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times"></i> Đóng
+    </button>
+    <button type="button" class="btn btn-primary" onclick="submitEditForm()">
+        <i class="fas fa-save"></i> Cập nhật
+    </button>
+</div>

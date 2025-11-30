@@ -1,0 +1,295 @@
+﻿@model PagedList.IPagedList<banSach.Models.MaGiamGia>
+@using PagedList.Mvc;
+
+@{
+    ViewBag.Title = "Quản lý Mã giảm giá";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var now = DateTime.Now;
+}
+
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-ticket-alt"></i> Quản lý Mã giảm giá</h1>
+        <div class="page-actions">
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tạo mã giảm giá mới
+            </a>
+        </div>
+    </div>
+
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index", "HomeAdmin")">Trang chủ</a></li>
+        <li class="breadcrumb-item active">Mã giảm giá</li>
+    </ol>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-primary">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="stats-card-title">Tổng số mã</div>
+                <div class="stats-card-value">@Model.Count()</div>
+                <div class="stats-card-change">
+                    <i class="fas fa-info-circle"></i> Tất cả chương trình
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-card-title">Đang hoạt động</div>
+                <div class="stats-card-value">@Model.Count(m => m.NgayBatDau <= now && m.NgayKetThuc >= now && m.SoLuongMa > (m.DaSuDung ?? 0))</div>
+                <div class="stats-card-change positive">
+                    <i class="fas fa-check"></i> Có thể sử dụng
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-card-title">Sắp diễn ra</div>
+                <div class="stats-card-value">@Model.Count(m => m.NgayBatDau > now)</div>
+                <div class="stats-card-change">
+                    <i class="fas fa-calendar-alt"></i> Chưa bắt đầu
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-danger">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stats-card-title">Đã hết hạn</div>
+                <div class="stats-card-value">@Model.Count(m => m.NgayKetThuc < now)</div>
+                <div class="stats-card-change negative">
+                    <i class="fas fa-ban"></i> Không khả dụng
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-search"></i> Tìm kiếm và lọc
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "MaGiamGias", FormMethod.Get, new { @class = "row g-3" }))
+            {
+                <div class="col-md-5">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="Tìm theo mã code, tên chương trình..." />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="active" @(ViewBag.CurrentStatus == "active" ? "selected" : "")>Đang hoạt động</option>
+                        <option value="upcoming" @(ViewBag.CurrentStatus == "upcoming" ? "selected" : "")>Sắp diễn ra</option>
+                        <option value="expired" @(ViewBag.CurrentStatus == "expired" ? "selected" : "")>Đã hết hạn</option>
+                        <option value="outofstock" @(ViewBag.CurrentStatus == "outofstock" ? "selected" : "")>Hết lượt sử dụng</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary w-100">
+                        <i class="fas fa-redo"></i> Đặt lại
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Discount Codes Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table"></i> Danh sách mã giảm giá (@Model.TotalItemCount mã)
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-barcode"></i> Mã giảm giá</th>
+                            <th><i class="fas fa-tag"></i> Tên chương trình</th>
+                            <th><i class="fas fa-percent"></i> Giá trị giảm</th>
+                            <th><i class="fas fa-calendar"></i> Thời hạn</th>
+                            <th><i class="fas fa-users"></i> Lượt sử dụng</th>
+                            <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                            <th><i class="fas fa-cog"></i> Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td data-label="Mã Code">
+                                        <strong class="text-primary">
+                                            <i class="fas fa-ticket-alt"></i> @item.MaCode
+                                        </strong>
+                                    </td>
+                                    <td data-label="Tên chương trình">
+                                        <div style="max-width: 250px;">
+                                            @item.TenChuongTrinh
+                                        </div>
+                                    </td>
+                                    <td data-label="Giá trị giảm">
+                                        @if (item.PhanTramGiam.HasValue && item.PhanTramGiam.Value > 0)
+                                        {
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-percent"></i> @item.PhanTramGiam%
+                                            </span>
+                                        }
+                                        else if (item.SoTienGiam.HasValue && item.SoTienGiam.Value > 0)
+                                        {
+                                            <span class="badge badge-info">
+                                                <i class="fas fa-money-bill-wave"></i> @item.SoTienGiam.Value.ToString("N0")đ
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td data-label="Thời hạn">
+                                        <small>
+                                            <i class="fas fa-calendar-check text-success"></i>
+                                            @(item.NgayBatDau.HasValue ? item.NgayBatDau.Value.ToString("dd/MM/yyyy") : "-")
+                                            <br />
+                                            <i class="fas fa-calendar-times text-danger"></i>
+                                            @(item.NgayKetThuc.HasValue ? item.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "-")
+                                        </small>
+                                    </td>
+                                    <td data-label="Lượt sử dụng">
+                                        @{
+                                            var daSuDung = item.DaSuDung ?? 0;
+                                            var soLuongMa = item.SoLuongMa ?? 0;
+                                            var percentage = soLuongMa > 0 ? (daSuDung * 100.0 / soLuongMa) : 0;
+                                        }
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar @(percentage >= 100 ? "bg-danger" : percentage >= 80 ? "bg-warning" : "bg-success")"
+                                                 role="progressbar"
+                                                 style="width: @(percentage)%"
+                                                 aria-valuenow="@daSuDung"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="@soLuongMa">
+                                                <strong>@daSuDung / @soLuongMa</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td data-label="Trạng thái">
+                                        @if (item.NgayKetThuc < now)
+                                        {
+                                            <span class="badge badge-secondary">
+                                                <span class="status-indicator inactive"></span>
+                                                <i class="fas fa-ban"></i> Đã hết hạn
+                                            </span>
+                                        }
+                                        else if (item.NgayBatDau > now)
+                                        {
+                                            <span class="badge badge-warning">
+                                                <span class="status-indicator warning"></span>
+                                                <i class="fas fa-clock"></i> Sắp diễn ra
+                                            </span>
+                                        }
+                                        else if ((item.DaSuDung ?? 0) >= (item.SoLuongMa ?? 0))
+                                        {
+                                            <span class="badge badge-danger">
+                                                <span class="status-indicator inactive"></span>
+                                                <i class="fas fa-times-circle"></i> Hết lượt
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-success">
+                                                <span class="status-indicator active"></span>
+                                                <i class="fas fa-check-circle"></i> Hoạt động
+                                            </span>
+                                        }
+                                    </td>
+                                    <td data-label="Thao tác">
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("Details", new { id = item.MaCode })" class="btn btn-sm btn-outline-info" title="Chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="@Url.Action("Edit", new { id = item.MaCode })" class="btn btn-sm btn-outline-primary" title="Sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                            <a href="@Url.Action("Delete", new { id = item.MaCode })"
+                                               class="btn btn-sm btn-outline-danger"
+                                               title="Xóa"
+                                               onclick="return confirm('Bạn có chắc muốn xóa sách này?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Không tìm thấy mã giảm giá nào</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.PageCount > 1)
+            {
+                <div class="row mt-3">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info">
+                            Hiển thị trang @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) / @Model.PageCount
+                            (Tổng @Model.TotalItemCount mã)
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_simple_numbers">
+                            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewBag.CurrentFilter, status = ViewBag.CurrentStatus }))
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Auto dismiss alerts after 5 seconds
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+        });
+    </script>
+}

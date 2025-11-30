@@ -1,0 +1,404 @@
+/* Catalog Container */
+.catalog-container {
+    padding: 40px 0;
+    background-color: #f9f9f9;
+}
+
+/* Sidebar Styles */
+.sidebar-filter {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.filter-group {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+}
+
+.filter-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.filter-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    padding-left: 15px;
+}
+
+.filter-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    height: 14px;
+    width: 4px;
+    background-color: #07a54b;
+    /* Main green color */
+    border-radius: 2px;
+}
+
+/* Category List */
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-list li {
+    margin-bottom: 8px;
+}
+
+.category-list a {
+    color: #555;
+    text-decoration: none;
+    font-size: 14px;
+    display: block;
+    padding: 5px 0;
+    transition: all 0.3s;
+}
+
+.category-list a:hover,
+.category-list a.active {
+    color: #07a54b;
+    padding-left: 5px;
+    font-weight: 600;
+}
+
+/* Checkbox List (Publishers) */
+.checkbox-list {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for checkbox list */
+.checkbox-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.checkbox-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.checkbox-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 2px;
+}
+
+.custom-control {
+    position: relative;
+    display: block;
+    min-height: 1.5rem;
+    padding-left: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.custom-control-input {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+}
+
+.custom-control-label {
+    position: relative;
+    margin-bottom: 0;
+    vertical-align: top;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+}
+
+.custom-control-label::before {
+    position: absolute;
+    top: 2px;
+    left: -1.5rem;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+    content: "";
+    background-color: #fff;
+    border: 1px solid #adb5bd;
+    border-radius: 3px;
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.custom-control-input:checked~.custom-control-label::before {
+    color: #fff;
+    border-color: #07a54b;
+    background-color: #07a54b;
+}
+
+.custom-control-input:checked~.custom-control-label::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
+}
+
+.custom-control-label::after {
+    position: absolute;
+    top: 2px;
+    left: -1.5rem;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    content: "";
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 50% 50%;
+}
+
+/* Price Slider */
+.price-slider-wrapper {
+    padding: 10px 5px;
+}
+
+#slider-range {
+    height: 6px;
+    background: #e9ecef;
+    border: none;
+    border-radius: 3px;
+    margin-bottom: 20px;
+}
+
+#slider-range .ui-slider-range {
+    background: #07a54b;
+}
+
+#slider-range .ui-slider-handle {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #07a54b;
+    top: -6px;
+    cursor: pointer;
+    outline: none;
+}
+
+.price-values {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Product Grid */
+.product-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    border-color: transparent;
+}
+
+.product-img-wrapper {
+    position: relative;
+    padding-top: 100%;
+    /* 1:1 Aspect Ratio */
+    overflow: hidden;
+    background: #f8f8f8;
+}
+
+.product-img-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Or cover, depending on image quality */
+    padding: 15px;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-img-wrapper img {
+    transform: scale(1.05);
+}
+
+/* Badges */
+.badge-sale {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff3333;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* Action Buttons Overlay */
+.product-actions {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    transition: bottom 0.3s ease;
+    z-index: 3;
+}
+
+.product-card:hover .product-actions {
+    bottom: 0;
+}
+
+.action-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    background: #07a54b;
+    color: #fff;
+    border-color: #07a54b;
+}
+
+.action-btn.active {
+    color: #ff3333;
+    border-color: #ff3333;
+}
+
+/* Product Content */
+.product-details {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    height: 42px;
+    /* 2 lines */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.product-title a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.product-title a:hover {
+    color: #07a54b;
+}
+
+.product-price-box {
+    margin-top: auto;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.current-price {
+    color: #d92121;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.old-price {
+    color: #999;
+    text-decoration: line-through;
+    font-size: 13px;
+}
+
+/* Sort Bar */
+.sort-bar {
+    background: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sort-select {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
+    outline: none;
+    color: #555;
+}
+
+.sort-select:focus {
+    border-color: #07a54b;
+}
+
+/* Pagination */
+.pagination-container {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    gap: 5px;
+}
+
+.pagination li a,
+.pagination li span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.pagination li.active span,
+.pagination li a:hover {
+    background: #07a54b;
+    color: #fff;
+    border-color: #07a54b;
+}

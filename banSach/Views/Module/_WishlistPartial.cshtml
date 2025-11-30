@@ -1,0 +1,32 @@
+﻿@model IEnumerable<banSach.Models.Sach>
+
+<div class="like-list">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <div class="like-list-item" data-masach="@item.MaSach">
+                <a href="@Url.Action("Details", "Book", new { id = item.MaSach })" title="@item.TenSach">
+                    <img src="~/img/sach/@item.Hinh" alt="@item.TenSach" class="like-item-img" />
+                </a>
+                <div class="like-item-info">
+                    <h5><a href="@Url.Action("Details", "Book", new { id = item.MaSach })">@item.TenSach</a></h5>
+                    <span class="like-item-price">@String.Format("{0:0,0}", item.GiaBan) VNĐ</span>
+                </div>
+                <button type="button"
+                        class="like-item-remove btn-remove-favorite"
+                        data-masach="@item.MaSach"
+                        onclick="removeFavoriteItem('@item.MaSach', this)"
+                        title="Bỏ thích">
+                    &times;
+                </button>
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-center like-empty-message" style="padding: 20px 0;">
+            Bạn chưa có sản phẩm yêu thích nào.
+        </p>
+    }
+</div>

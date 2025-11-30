@@ -1,0 +1,453 @@
+﻿﻿@model banSach.Models.ThongKeDonHang
+@{
+    ViewBag.Title = "Trang chủ Admin";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        --primary-color: #4e73df;
+        --success-color: #1cc88a;
+        --info-color: #36b9cc;
+        --warning-color: #f6c23e;
+        --danger-color: #e74a3b;
+        --secondary-color: #858796;
+        --light-bg: #f8f9fc;
+        --card-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, .15);
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .dashboard-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-dashboard {
+        border: none;
+        border-radius: 0.35rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.2s ease-in-out;
+        height: 100%;
+    }
+    
+    .card-dashboard:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-border-left-primary { border-left: 0.25rem solid var(--primary-color) !important; }
+    .card-border-left-success { border-left: 0.25rem solid var(--success-color) !important; }
+    .card-border-left-info { border-left: 0.25rem solid var(--info-color) !important; }
+    .card-border-left-warning { border-left: 0.25rem solid var(--warning-color) !important; }
+
+    .text-xs {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05rem;
+    }
+
+    .text-gray-300 { color: #dddfeb !important; }
+    .text-gray-800 { color: #5a5c69 !important; }
+
+    .chart-area {
+        position: relative;
+        height: 20rem;
+        width: 100%;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+
+    .badge-rank {
+        width: 25px;
+        height: 25px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        color: white;
+    }
+    .rank-1 { background-color: #FFD700; }
+    .rank-2 { background-color: #C0C0C0; }
+    .rank-3 { background-color: #CD7F32; }
+    .rank-other { background-color: #e3e6f0; color: #5a5c69; }
+
+</style>
+
+<div class="container-fluid px-4">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4 dashboard-header">
+        <h1 class="h3 mb-0 text-gray-800">Tổng quan</h1>
+        <div class="text-secondary">
+            <i class="fas fa-calendar fa-sm"></i> @DateTime.Now.ToString("dd/MM/yyyy")
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-dashboard card-border-left-primary h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Tổng Doanh Thu (Thực thu)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@String.Format("{0:N0}", ViewBag.TongDoanhThu)₫</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-dashboard card-border-left-success h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Đơn Hàng Hoàn Tất</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TongDonHang</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-dashboard card-border-left-info h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Sách Trong Kho
+                            </div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">@ViewBag.TongSach</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Requests Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-dashboard card-border-left-warning h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Khách Hàng</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TongKhachHang</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+
+    <div class="row">
+
+        <!-- Area Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card card-dashboard shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Biểu Đồ Doanh Thu Năm @DateTime.Now.Year</h6>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="myAreaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card card-dashboard shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Trạng Thái Đơn Hàng</h6>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="myPieChart"></canvas>
+                    </div>
+                    @*<div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-primary"></i> Đã thanh toán/Hoàn tất
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-warning"></i> Chờ xác nhận
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-danger"></i> Đã hủy
+                        </span>
+                    </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+
+        <!-- Content Column -->
+        <div class="col-lg-12 mb-4">
+
+            <!-- Project Card Example -->
+            <div class="card card-dashboard shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Top 10 Sách Bán Chạy Nhất</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">Hạng</th>
+                                    <th>Sách</th>
+                                    <th>Giá bán</th>
+                                    <th>Đã bán</th>
+                                    <th>Doanh thu ước tính</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var rank = 1;
+                                    var bestSellers = ViewBag.BestSellerBooks as List<banSach.Models.BestSellerViewModel>;
+                                }
+                                @if (bestSellers != null)
+                                {
+                                    foreach (var item in bestSellers)
+                                    {
+                                        var rankClass = rank == 1 ? "rank-1" : (rank == 2 ? "rank-2" : (rank == 3 ? "rank-3" : "rank-other"));
+                                        <tr>
+                                            <td class="text-center align-middle">
+                                                <span class="badge-rank @rankClass">@rank</span>
+                                            </td>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="~/img/sach/@item.Hinh" alt="@item.TenSach" style="width: 40px; height: 60px; object-fit: cover; margin-right: 10px; border-radius: 4px;">
+                                                    <span class="font-weight-bold">@item.TenSach</span>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">@String.Format("{0:N0}", item.GiaBan)₫</td>
+                                            <td class="align-middle text-center font-weight-bold text-success">@item.SoLuongBan</td>
+                                            <td class="align-middle text-right">@String.Format("{0:N0}", item.GiaBan * item.SoLuongBan)₫</td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Set new default font family and font color to mimic Bootstrap's default styling
+    Chart.defaults.font.family = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+    Chart.defaults.color = '#858796';
+
+    // Area Chart Example
+    var ctx = document.getElementById("myAreaChart");
+    var revenueData = @Html.Raw(ViewBag.RevenueData ?? "[]");
+    var myAreaChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"],
+            datasets: [{
+                label: "Doanh thu",
+                lineTension: 0.3,
+                backgroundColor: "rgba(78, 115, 223, 0.05)",
+                borderColor: "rgba(78, 115, 223, 1)",
+                pointRadius: 3,
+                pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointBorderColor: "rgba(78, 115, 223, 1)",
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                data: revenueData,
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25,
+                    top: 25,
+                    bottom: 0
+                }
+            },
+            scales: {
+                x: {
+                    time: {
+                        unit: 'date'
+                    },
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 7
+                    },
+                    title: {
+                        display: true,
+                        text: 'Thời gian (Tháng)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        maxTicksLimit: 5,
+                        padding: 10,
+                        // Include a dollar sign in the ticks
+                        callback: function(value, index, values) {
+                            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+                        }
+                    },
+                    grid: {
+                        color: "rgb(234, 236, 244)",
+                        zeroLineColor: "rgb(234, 236, 244)",
+                        drawBorder: false,
+                        borderDash: [2],
+                        zeroLineBorderDash: [2]
+                    },
+                    title: {
+                        display: true,
+                        text: 'Doanh thu (VNĐ)'
+                    }
+                },
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Biểu đồ biến động doanh thu theo tháng',
+                    font: { size: 16 }
+                },
+                tooltip: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyColor: "#858796",
+                    titleMarginBottom: 10,
+                    titleColor: '#6e707e',
+                    titleFont: {
+                        size: 14
+                    },
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    intersect: false,
+                    mode: 'index',
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Pie Chart Example
+    var ctxPie = document.getElementById("myPieChart");
+    // Use the raw data from ViewBag if possible, otherwise fallback to model
+    // Since we passed OrderStatusData/Labels, let's use them if valid, else fallback to the simple 3 stats
+    
+    // For simplicity, let's just use the 3 main stats we have in the Model for the chart
+    var pieData = [@Model.DaThanhToanVaHoanTat, @Model.ChoXacNhan, @Model.DaHuy];
+    var pieLabels = ["Hoàn tất/Đã thanh toán", "Chờ xác nhận", "Đã hủy"];
+
+    var myPieChart = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieData,
+                backgroundColor: ['#4e73df', '#f6c23e', '#e74a3b'],
+                hoverBackgroundColor: ['#2e59d9', '#dda20a', '#be2617'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Tỷ lệ trạng thái đơn hàng',
+                    font: { size: 16 }
+                },
+                cutout: '70%',
+            },
+        },
+    });
+</script>

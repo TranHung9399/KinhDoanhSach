@@ -1,0 +1,344 @@
+﻿@model PagedList.IPagedList<banSach.Models.Sach>
+@using PagedList.Mvc
+@{
+    ViewBag.Title = ViewBag.Category != null ? ViewBag.Category.TenLoai : "Danh sách sách";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var publishers = ViewBag.Publishers as List<banSach.Models.NhaXuatBan>;
+    var selectedPublishers = ViewBag.SelectedPublishers as string[];
+    var minPrice = ViewBag.SelectedMinPrice as decimal?;
+    var maxPrice = ViewBag.SelectedMaxPrice as decimal?;
+    var globalMin = (decimal)ViewBag.GlobalMinPrice;
+    var globalMax = (decimal)ViewBag.GlobalMaxPrice;
+    var currentSort = ViewBag.CurrentSort as string;
+    var currentType = ViewBag.CurrentType as string;
+    var currentId = ViewBag.CurrentId as string;
+}
+
+<!-- CSS Dependencies -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="@Url.Content("~/Content/css/catalog.css")" />
+<link rel="stylesheet" href="~/Content/css/thongbao1.css" />
+@Html.Partial("_CustomToast")
+
+<div class="catalog-container">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb bg-transparent p-0">
+                <li class="breadcrumb-item"><a href="/" class="text-dark text-decoration-none">Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@(ViewBag.Category != null ? ViewBag.Category.TenLoai : "Sách")</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 col-md-4">
+                <div class="sidebar-filter">
+                    <!-- Categories -->
+                    <div class="filter-group">
+                        <h4 class="filter-title">Danh Mục</h4>
+                        <ul class="category-list">
+                            <li>
+                                <a href="@Url.Action("Index", "Book")" class="@(string.IsNullOrEmpty(currentId) && string.IsNullOrEmpty(currentType) ? "active" : "")">
+                                    Tất cả sách
+                                </a>
+                            </li>
+                            @if (ViewBag.SidebarCategories != null)
+                            {
+                                foreach (var cat in ViewBag.SidebarCategories)
+                                {
+                                    <li>
+                                        <a href="@Url.Action("Index", "Book", new { id = cat.MaLoai })" 
+                                           class="@(currentId == cat.MaLoai ? "active" : "")">
+                                            @cat.TenLoai
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+
+                    <!-- Publishers -->
+                    <div class="filter-group">
+                        <h4 class="filter-title">Nhà Xuất Bản</h4>
+                        <div class="checkbox-list">
+                            @if (publishers != null)
+                            {
+                                foreach (var pub in publishers)
+                                {
+                                    bool isChecked = selectedPublishers != null && selectedPublishers.Contains(pub.MaNXB);
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input publisher-filter" 
+                                               id="pub-@pub.MaNXB" value="@pub.MaNXB" @(isChecked ? "checked" : "")>
+                                        <label class="custom-control-label" for="pub-@pub.MaNXB">@pub.TenNXB</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div class="filter-group">
+                        <h4 class="filter-title">Khoảng Giá</h4>
+                        <div class="price-slider-wrapper">
+                            <div id="slider-range"></div>
+                            <div class="price-values mt-3">
+                                <span id="price-min">@String.Format("{0:N0}đ", minPrice ?? globalMin)</span>
+                                <span id="price-max">@String.Format("{0:N0}đ", maxPrice ?? globalMax)</span>
+                            </div>
+                            <input type="hidden" id="min-price-input" value="@(minPrice ?? globalMin)">
+                            <input type="hidden" id="max-price-input" value="@(maxPrice ?? globalMax)">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success w-100 mt-3" onclick="applyFilters()">
+                        <i class="fa fa-filter me-2"></i> Lọc sản phẩm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="col-lg-9 col-md-8">
+                <!-- Sort Bar -->
+                <div class="sort-bar">
+                    <div class="result-count">
+                        Hiển thị <strong>@Model.Count</strong> kết quả
+                    </div>
+                    <div class="sort-options">
+                        <select id="sortSelect" class="sort-select" onchange="applyFilters()">
+                            <option value="moinhat" @(currentSort == "moinhat" ? "selected" : "")>Mới nhất</option>
+                            <option value="cunhat" @(currentSort == "cunhat" ? "selected" : "")>Cũ nhất</option>
+                            <option value="giatangdan" @(currentSort == "giatangdan" ? "selected" : "")>Giá: Tăng dần</option>
+                            <option value="giagiamdan" @(currentSort == "giagiamdan" ? "selected" : "")>Giá: Giảm dần</option>
+                            <option value="tenaz" @(currentSort == "tenaz" ? "selected" : "")>Tên: A-Z</option>
+                            <option value="tenza" @(currentSort == "tenza" ? "selected" : "")>Tên: Z-A</option>
+                            <option value="banchay" @(currentSort == "banchay" ? "selected" : "")>Bán chạy nhất</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products -->
+                <div class="row">
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var sach in Model)
+                        {
+                            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 col-12 mb-4">
+                                <div class="product-card">
+                                    <div class="product-img-wrapper">
+                                        @{
+                                            var phanTramGiam = (sach.GiaBan > 0 && sach.GiaChietKhau.HasValue) ?
+                                                Math.Round(100M - sach.GiaChietKhau.Value * 100M / sach.GiaBan.Value) : 0;
+                                        }
+                                        @if (phanTramGiam > 0)
+                                        {
+                                            <div class="badge-sale">-@phanTramGiam.ToString("0")%</div>
+                                        }
+                                        <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })">
+                                            <img src="~/img/sach/@sach.Hinh" alt="@sach.TenSach" onerror="this.src='/img/no-image.jpg'">
+                                        </a>
+                                        <div class="product-actions">
+                                            <a href="#" class="action-btn favorite-btn-home" data-masach="@sach.MaSach" title="Yêu thích">
+                                                <i class="fa fa-heart"></i>
+                                            </a>
+                                            <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })" class="action-btn" title="Xem chi tiết">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="#" class="action-btn btnAddCart" 
+                                               data-masach="@sach.MaSach"
+                                               data-url="@Url.Action("ThemGiohangAjax", "GioHang")"
+                                               title="Thêm vào giỏ">
+                                                <i class="fa fa-shopping-cart"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="product-details">
+                                        <h3 class="product-title">
+                                            <a href="@Url.Action("Details", "Book", new { id = sach.MaSach })">@sach.TenSach</a>
+                                        </h3>
+                                        <div class="product-price-box">
+                                            @if (sach.SoLuongTon != 0 && sach.SoLuongTon != null)
+                                            {
+                                                <span class="current-price">@String.Format("{0:N0}đ", sach.GiaChietKhau ?? sach.GiaBan)</span>
+                                                if (sach.GiaChietKhau.HasValue && sach.GiaChietKhau < sach.GiaBan)
+                                                {
+                                                    <span class="old-price">@String.Format("{0:N0}đ", sach.GiaBan)</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger fw-bold">Hết hàng</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5">
+                            <img src="~/img/no-result.png" alt="No results" style="max-width: 150px; opacity: 0.5;">
+                            <p class="mt-3 text-muted">Không tìm thấy sách nào phù hợp với tiêu chí lọc.</p>
+                            <a href="@Url.Action("Index", "Book")" class="btn btn-outline-success mt-2">Xóa bộ lọc</a>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    @Html.PagedListPager(Model, page => Url.Action("Index", new { 
+                        page, 
+                        id = currentId, 
+                        type = currentType, 
+                        sort = currentSort,
+                        // Note: Complex objects like arrays need special handling in PagedList or JS
+                        // For simplicity, we'll rely on JS to handle pagination clicks or form submission
+                        // But PagedList generates links. We can intercept them.
+                   }), new PagedListRenderOptions {
+                        LiElementClasses = new[] { "page-item" },
+                        LinkToPreviousPageFormat = "<i class='fa fa-angle-left'></i>",
+                        LinkToNextPageFormat = "<i class='fa fa-angle-right'></i>",
+                        ClassToApplyToFirstListItemInPager = "first-page",
+                        ClassToApplyToLastListItemInPager = "last-page"
+                   })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="~/Scripts/book-common.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Price Slider
+            var minPrice = @(minPrice ?? globalMin);
+            var maxPrice = @(maxPrice ?? globalMax);
+            var globalMin = @globalMin;
+            var globalMax = @globalMax;
+
+            $("#slider-range").slider({
+                range: true,
+                min: globalMin,
+                max: globalMax,
+                values: [minPrice, maxPrice],
+                slide: function(event, ui) {
+                    $("#price-min").text(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(ui.values[0]));
+                    $("#price-max").text(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(ui.values[1]));
+                    $("#min-price-input").val(ui.values[0]);
+                    $("#max-price-input").val(ui.values[1]);
+                }
+            });
+
+            // Initialize Favorite Buttons
+            loadFavoriteStatus();
+            
+            // Handle Pagination Clicks to include filters
+            $('.pagination a').click(function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                if (url) {
+                    var page = new URLSearchParams(url.split('?')[1]).get('page');
+                    applyFilters(page);
+                }
+            });
+
+             // Handle favorite button click
+            $('.favorite-btn-home').click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var btn = $(this);
+                var maSach = btn.data('masach');
+
+                $.ajax({
+                    url: '@Url.Action("ToggleFavorite", "YeuThich")',
+                    type: 'POST',
+                    data: { maSach: maSach },
+                    success: function(res) {
+                        if (res.success) {
+                            if (res.isFavorite) {
+                                btn.addClass('active');
+                                showCustomToast('Đã thêm vào yêu thích');
+                                if (typeof window.reloadWishlistSidebar === 'function') {
+                                    window.reloadWishlistSidebar();
+                                }
+                            } else {
+                                btn.removeClass('active');
+                                showCustomToast('Đã xóa khỏi yêu thích');
+                                if (typeof window.reloadWishlistSidebar === 'function') {
+                                    window.reloadWishlistSidebar();
+                                }
+                            }
+                        } else if (res.needLogin) {
+                            if (confirm('Vui lòng đăng nhập để thêm vào yêu thích. Bạn có muốn đăng nhập không?')) {
+                                window.location.href = '@Url.Action("Index", "Dangnhap")';
+                            }
+                        } else {
+                            alert(res.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra. Vui lòng thử lại!');
+                    }
+                });
+            });
+        });
+
+        function loadFavoriteStatus() {
+            $('.favorite-btn-home').each(function() {
+                var btn = $(this);
+                var maSach = btn.data('masach');
+
+                $.ajax({
+                    url: '@Url.Action("IsFavorite", "YeuThich")',
+                    type: 'GET',
+                    data: { maSach: maSach },
+                    success: function(res) {
+                        if (res.success && res.isFavorite) {
+                            btn.addClass('active');
+                        }
+                    }
+                });
+            });
+        }
+
+        function applyFilters(page) {
+            var url = '@Url.Action("Index", "Book")';
+            var params = [];
+
+            // Category & Type
+            var id = '@currentId';
+            var type = '@currentType';
+            if (id) params.push('id=' + encodeURIComponent(id));
+            if (type) params.push('type=' + encodeURIComponent(type));
+
+            // Publishers
+            $('.publisher-filter:checked').each(function() {
+                params.push('publishers=' + encodeURIComponent($(this).val()));
+            });
+
+            // Price
+            var min = $("#min-price-input").val();
+            var max = $("#max-price-input").val();
+            if (min) params.push('minPrice=' + min);
+            if (max) params.push('maxPrice=' + max);
+
+            // Sort
+            var sort = $('#sortSelect').val();
+            if (sort) params.push('sort=' + sort);
+
+            // Page
+            if (page) params.push('page=' + page);
+
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+
+            window.location.href = url;
+        }
+    </script>
+}

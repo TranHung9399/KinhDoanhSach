@@ -1,0 +1,49 @@
+﻿@{
+    var categories = ViewBag.SidebarCategories as List<banSach.Models.Loai>;
+}
+<div class="sidebar-category">
+    <h5 class="sidebar-title">Danh Mục</h5>
+    <ul class="list-group">
+        @if (categories != null)
+        {
+            foreach (var cat in categories)
+            {
+                <li class="list-group-item">
+                    <a href="@Url.Action("Index", "Book", new { id = cat.MaLoai })">@cat.TenLoai</a>
+                </li>
+            }
+        }
+    </ul>
+</div>
+<style>
+.sidebar-category {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 20px 10px;
+    margin-bottom: 30px;
+}
+.sidebar-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.list-group-item {
+    border: none;
+	font-size: 12px;
+    padding: 8px 0;
+    background: none;
+}
+.list-group-item a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+    .list-group-item a:hover {
+        color: #07a54b;
+        text-decoration: underline;
+    }
+</style> 
