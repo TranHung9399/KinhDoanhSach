@@ -324,6 +324,7 @@
     <Compile Include="Areas\Admin\AdminAuthorizeAttribute.cs" />
     <Compile Include="Areas\Admin\CheckFunctionAccessAttribute.cs" />
     <Compile Include="Areas\Admin\CheckPermissionAttribute.cs" />
+    <Compile Include="Areas\Admin\Controllers\ChucNangsController.cs" />
     <Compile Include="Areas\Admin\Controllers\ChucVusController.cs" />
     <Compile Include="Areas\Admin\Controllers\DanhGiasController.cs" />
     <Compile Include="Areas\Admin\Controllers\DonDatHangsController.cs" />
@@ -334,6 +335,7 @@
     <Compile Include="Areas\Admin\Controllers\MaGiamGiasController.cs" />
     <Compile Include="Areas\Admin\Controllers\NhanViensController.cs" />
     <Compile Include="Areas\Admin\Controllers\NHAXUATBANsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\QuyensController.cs" />
     <Compile Include="Areas\Admin\Controllers\SachsController.cs" />
     <Compile Include="Areas\Admin\Controllers\TacGiasController.cs" />
     <Compile Include="Areas\Admin\Controllers\TaiKhoanController.cs" />
