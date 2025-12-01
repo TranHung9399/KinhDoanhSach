@@ -50,7 +50,7 @@ namespace banSach.Areas.Admin.Controllers
 			int pageSize = 10;
 			int pageNumber = (page ?? 1);
 
-			var danhSach = db.Loais.Include(l => l.Saches).OrderBy(l => l.MaLoai).ToPagedList(pageNumber, pageSize);
+			var danhSach = await Task.Run(() => db.Loais.Include(l => l.Saches).OrderBy(l => l.MaLoai).ToPagedList(pageNumber, pageSize));
 			return View(danhSach);
 		}
 

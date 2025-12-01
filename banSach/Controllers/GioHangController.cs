@@ -16,7 +16,7 @@ namespace banSach.Controllers
 	{
 
 		// GET: GioHang
-		public ActionResult Index()
+		public async Task<ActionResult> Index()
 		{
 			var maKH = Session["MaKH"]?.ToString();
 			GioHang gioHang;
@@ -24,7 +24,7 @@ namespace banSach.Controllers
 			if (!string.IsNullOrEmpty(maKH))
 			{
 				// Đã đăng nhập: lấy giỏ hàng từ DB
-				gioHang = db.GioHangs.Include("ChiTietGioHangs.Sach").FirstOrDefault(g => g.MaKH == maKH);
+				gioHang = await db.GioHangs.Include("ChiTietGioHangs.Sach").FirstOrDefaultAsync(g => g.MaKH == maKH);
 				if (gioHang == null)
 				{
 					gioHang = new GioHang
@@ -42,9 +42,16 @@ namespace banSach.Controllers
 				var cart = Session["Cart"] as List<ChiTietGioHang>;
 				if (cart != null)
 				{
+                    // Note: Since this is session data, we might not want to query DB for every item if we can avoid it.
+                    // But to be safe and consistent with original logic:
+                    // We can't easily async foreach.
+                    // Let's collect IDs and fetch all at once async.
+                    var bookIds = cart.Select(c => c.MaSach).ToList();
+                    var books = await db.Saches.AsNoTracking().Where(s => bookIds.Contains(s.MaSach)).ToListAsync();
+
 					foreach (var ct in cart)
 					{
-						ct.Sach = db.Saches.Find(ct.MaSach);
+						ct.Sach = books.FirstOrDefault(s => s.MaSach == ct.MaSach);
 					}
 				}
 				var gioHangSession = new GioHang
@@ -63,13 +70,13 @@ namespace banSach.Controllers
 		// GET: GioHang/ThemGiohang
 		// GET: GioHang/ThemGiohang
 		[HttpPost]
-		public JsonResult ThemGiohangAjax(string iMasach, int qty = 1)
+		public async Task<JsonResult> ThemGiohangAjax(string iMasach, int qty = 1)
 		{
 			var maKH = Session["MaKH"]?.ToString();
 			if (string.IsNullOrEmpty(maKH))
 			{
 				// Chưa đăng nhập: thêm vào session Cart
-				var sach = db.Saches.Find(iMasach);
+				var sach = await db.Saches.FindAsync(iMasach);
 				if (sach == null || sach.Status != 1 || sach.SoLuongTon <= 0)
 					return Json(new { success = false, message = "Sách không tồn tại hoặc đã hết hàng." });
 
@@ -100,11 +107,11 @@ namespace banSach.Controllers
 			else
 			{
 				// Đã đăng nhập: thêm vào DB
-				var sach = db.Saches.Find(iMasach);
+				var sach = await db.Saches.FindAsync(iMasach);
 				if (sach == null || sach.Status != 1 || sach.SoLuongTon <= 0)
 					return Json(new { success = false, message = "Sách không tồn tại hoặc đã hết hàng." });
 
-				var gioHang = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
+				var gioHang = await db.GioHangs.FirstOrDefaultAsync(g => g.MaKH == maKH);
 				if (gioHang == null)
 				{
 					gioHang = new GioHang
@@ -114,10 +121,10 @@ namespace banSach.Controllers
 						NgayTao = DateTime.Now
 					};
 					db.GioHangs.Add(gioHang);
-					db.SaveChanges();
+					await db.SaveChangesAsync();
 				}
 
-				var chiTiet = db.ChiTietGioHangs.FirstOrDefault(ct => ct.MaGioHang == gioHang.MaGioHang && ct.MaSach == iMasach);
+				var chiTiet = await db.ChiTietGioHangs.FirstOrDefaultAsync(ct => ct.MaGioHang == gioHang.MaGioHang && ct.MaSach == iMasach);
 				if (chiTiet == null)
 				{
 					chiTiet = new ChiTietGioHang
@@ -134,26 +141,26 @@ namespace banSach.Controllers
 				{
 					chiTiet.SoLuong = (chiTiet.SoLuong ?? 0) + qty;
 				}
-				db.SaveChanges();
+				await db.SaveChangesAsync();
 
-				var tongSoLuong = db.ChiTietGioHangs.Where(ct => ct.MaGioHang == gioHang.MaGioHang).Sum(ct => ct.SoLuong) ?? 0;
+				var tongSoLuong = await db.ChiTietGioHangs.Where(ct => ct.MaGioHang == gioHang.MaGioHang).SumAsync(ct => ct.SoLuong) ?? 0;
 				return Json(new { success = true, message = "Đã thêm sách vào giỏ hàng!", tongsoluong = tongSoLuong });
 			}
 
 		}
 
 		[HttpPost]
-		public ActionResult UpdateQuantity(string maGioHang, string maSach, int soLuong)
+		public async Task<ActionResult> UpdateQuantity(string maGioHang, string maSach, int soLuong)
 		{
 			try
 			{
-				var chiTiet = db.ChiTietGioHangs
-					.FirstOrDefault(ct => ct.MaGioHang == maGioHang && ct.MaSach == maSach);
+				var chiTiet = await db.ChiTietGioHangs
+					.FirstOrDefaultAsync(ct => ct.MaGioHang == maGioHang && ct.MaSach == maSach);
 
 				if (chiTiet == null)
 					return Json(new { success = false, message = "Không tìm thấy sản phẩm trong giỏ hàng." });
 
-				var sach = db.Saches.Find(maSach);
+				var sach = await db.Saches.FindAsync(maSach);
 				if (sach == null)
 					return Json(new { success = false, message = "Không tìm thấy sách." });
 
@@ -170,12 +177,12 @@ namespace banSach.Controllers
 					db.Entry<ChiTietGioHang>(chiTiet).State = System.Data.Entity.EntityState.Modified;
 				}
 
-				db.SaveChanges();
+				await db.SaveChangesAsync();
 
 				decimal newSubtotal = (soLuong <= 0) ? 0 : soLuong * (chiTiet.DonGia ?? 0);
-				decimal newTotal = db.ChiTietGioHangs
+				decimal newTotal = await db.ChiTietGioHangs
 					.Where(ct => ct.MaGioHang == maGioHang)
-					.Sum(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0));
+					.SumAsync(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0));
 
 				return Json(new
 				{
@@ -225,13 +232,13 @@ namespace banSach.Controllers
 		}
 
 		// GET: GioHang/RemoveItem
-		public ActionResult RemoveItem(string maGioHang, string maSach)
+		public async Task<ActionResult> RemoveItem(string maGioHang, string maSach)
 		{
-			var chiTiet = db.ChiTietGioHangs.FirstOrDefault(ct => ct.MaGioHang == maGioHang && ct.MaSach == maSach);
+			var chiTiet = await db.ChiTietGioHangs.FirstOrDefaultAsync(ct => ct.MaGioHang == maGioHang && ct.MaSach == maSach);
 			if (chiTiet != null)
 			{
 				db.ChiTietGioHangs.Remove(chiTiet);
-				db.SaveChanges();
+				await db.SaveChangesAsync();
 			}
 
 			return RedirectToAction("Index");
@@ -578,7 +585,7 @@ namespace banSach.Controllers
 			}
 			else // Thanh toán tiền mặt (COD)
 			{
-				return TaoDonHangCOD(orderDetails, cart, diaChiDayDu, tongTienHang, PhiVanChuyen, GiamGia, MaGiamGia);
+				return await TaoDonHangCOD(orderDetails, cart, diaChiDayDu, tongTienHang, PhiVanChuyen, GiamGia, MaGiamGia);
 			}
 		}
 
@@ -587,7 +594,7 @@ namespace banSach.Controllers
 			return DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
 		}
 
-		private ActionResult TaoDonHangCOD(Dictionary<string, object> orderDetails, List<ChiTietGioHang> cart,
+		private async Task<ActionResult> TaoDonHangCOD(Dictionary<string, object> orderDetails, List<ChiTietGioHang> cart,
 			string diaChiDayDu, decimal tongTienHang, decimal phiVanChuyen, decimal giamGia, string maGiamGia)
 		{
 			var maKH = Session["MaKH"]?.ToString(); // ✅ Lấy MaKH từ session
@@ -609,11 +616,15 @@ namespace banSach.Controllers
 			};
 			db.DonDatHangs.Add(donHang);
 
-			string emailBody = TaoEmailBody(donHang, cart, tongTienHang, phiVanChuyen, giamGia, maGiamGia);
+			string emailBody = await TaoEmailBody(donHang, cart, tongTienHang, phiVanChuyen, giamGia, maGiamGia);
+
+            // Batch fetch books to update stock
+            var bookIds = cart.Select(c => c.MaSach).ToList();
+            var booksToUpdate = await db.Saches.Where(s => bookIds.Contains(s.MaSach)).ToListAsync();
 
 			foreach (var item in cart)
 			{
-				var sach = db.Saches.Find(item.MaSach);
+                var sach = booksToUpdate.FirstOrDefault(s => s.MaSach == item.MaSach);
 				if (sach != null)
 					sach.SoLuongTon -= item.SoLuong ?? 0;
 
@@ -652,27 +663,27 @@ namespace banSach.Controllers
 				db.SuDungMaGiamGias.Add(suDung);
 
 				// Cập nhật số lần đã sử dụng mã giảm giá
-				var maGiamGiaObj = db.MaGiamGias.FirstOrDefault(m => m.MaCode == maGiamGia);
+				var maGiamGiaObj = await db.MaGiamGias.FirstOrDefaultAsync(m => m.MaCode == maGiamGia);
 				if (maGiamGiaObj != null)
 				{
 					maGiamGiaObj.DaSuDung = (maGiamGiaObj.DaSuDung ?? 0) + 1;
 				}
 			}
 
-			db.SaveChanges();
+			await db.SaveChangesAsync();
 
 			// Gửi email xác nhận
 			SendMail sendMail = new SendMail();
 			sendMail.SendMailFunction(donHang.Email, "Xác nhận đơn hàng từ Cửa hàng sách BOOKSTORE", emailBody);
 
 			// Xóa giỏ hàng
-			XoaGioHang();
+			await XoaGioHang();
 
 			TempData["Success"] = "Đặt hàng thành công!";
 			return RedirectToAction("Index", "Home");
 		}
 
-		public ActionResult PaymentConfirm()
+		public async Task<ActionResult> PaymentConfirm()
 		{
 			var vnPayService = new VnPayService();
 			var response = vnPayService.ParsePaymentResponse(Request.QueryString);
@@ -714,7 +725,7 @@ namespace banSach.Controllers
 
 			if (response.IsSuccess)
 			{
-				XuLyThanhToanThanhCong(response.OrderId, response.TransactionNo, 2);
+				await XuLyThanhToanThanhCong(response.OrderId, response.TransactionNo, 2);
 				ViewBag.Message = $"Thanh toán thành công! Mã giao dịch: {response.TransactionNo}";
 				TempData["Success"] = "Đặt hàng thành công!";
 			}
@@ -727,7 +738,7 @@ namespace banSach.Controllers
 			return View();
 		}
 
-		public ActionResult MomoPaymentConfirm()
+		public async Task<ActionResult> MomoPaymentConfirm()
 		{
 			if (Request.QueryString.Count > 0)
 			{
@@ -769,7 +780,7 @@ namespace banSach.Controllers
 					string amount = momoData.GetValueOrDefault("amount", "0");
 
 					// Xử lý đơn hàng
-					XuLyThanhToanThanhCong(orderId, transId, 3); // 3 = MoMo
+					await XuLyThanhToanThanhCong(orderId, transId, 3); // 3 = MoMo
 
 					ViewBag.Message = $"Thanh toán MoMo thành công! Mã đơn hàng: {orderId} | Mã giao dịch: {transId} | Số tiền: {long.Parse(amount):N0}đ";
 					TempData["Success"] = "Đặt hàng thành công!";
@@ -791,7 +802,7 @@ namespace banSach.Controllers
 			return View("PaymentConfirm");
 		}
 
-		private void XuLyThanhToanThanhCong(string orderId, string transactionId, int phuongThucThanhToan)
+		private async Task XuLyThanhToanThanhCong(string orderId, string transactionId, int phuongThucThanhToan)
 		{
 			var orderDetails = Session["PendingOrder"] as Dictionary<string, object>;
 			if (orderDetails == null) return;
@@ -831,7 +842,7 @@ namespace banSach.Controllers
 				int soLuong = Convert.ToInt32(item["SoLuong"]);
 				decimal donGia = Convert.ToDecimal(item["DonGia"]);
 
-				var sach = db.Saches.Find(maSach);
+				var sach = await db.Saches.FindAsync(maSach);
 				var thanhTien = soLuong * donGia;
 				tongTien += thanhTien;
 
@@ -880,14 +891,14 @@ namespace banSach.Controllers
 				db.SuDungMaGiamGias.Add(suDung);
 
 				// Cập nhật số lần đã sử dụng mã giảm giá
-				var maGiamGiaObj = db.MaGiamGias.FirstOrDefault(m => m.MaCode == maGiamGia);
+				var maGiamGiaObj = await db.MaGiamGias.FirstOrDefaultAsync(m => m.MaCode == maGiamGia);
 				if (maGiamGiaObj != null)
 				{
 					maGiamGiaObj.DaSuDung = (maGiamGiaObj.DaSuDung ?? 0) + 1;
 				}
 			}
 
-			db.SaveChanges();
+			await db.SaveChangesAsync();
 
 			// Gửi email
 			var cart = cartItems.Select(i => new ChiTietGioHang
@@ -897,16 +908,16 @@ namespace banSach.Controllers
 				DonGia = Convert.ToDecimal(i["DonGia"])
 			}).ToList();
 
-			string emailBody = TaoEmailBody(donHang, cart, tongTien, phiVanChuyen, giamGia, maGiamGia);
+			string emailBody = await TaoEmailBody(donHang, cart, tongTien, phiVanChuyen, giamGia, maGiamGia);
 			SendMail sendMail = new SendMail();
 			sendMail.SendMailFunction(email, "Xác nhận đơn hàng từ Cửa hàng sách BOOKSTORE", emailBody);
 
 			// Xóa session và giỏ hàng
 			Session["PendingOrder"] = null;
-			XoaGioHang();
+			await XoaGioHang();
 		}
 
-		private string TaoEmailBody(DonDatHang donHang, List<ChiTietGioHang> cart, decimal tongTienHang,
+		private async Task<string> TaoEmailBody(DonDatHang donHang, List<ChiTietGioHang> cart, decimal tongTienHang,
 			decimal phiVanChuyen, decimal giamGia, string maGiamGia)
 		{
 			var phuongThucText = donHang.PhuongThucThanhToan == 1 ? "Tiền mặt (COD)" :
@@ -930,7 +941,7 @@ namespace banSach.Controllers
 
 			foreach (var item in cart)
 			{
-				var sach = db.Saches.Find(item.MaSach);
+				var sach = await db.Saches.FindAsync(item.MaSach);
 				var thanhTien = (item.SoLuong ?? 0) * (item.DonGia ?? 0);
 
 				emailBody += $"<tr>" +
@@ -963,7 +974,7 @@ namespace banSach.Controllers
 			return emailBody;
 		}
 
-		private void XoaGioHang()
+		private async Task XoaGioHang()
 		{
 			var maKH = Session["MaKH"]?.ToString();
 			if (string.IsNullOrEmpty(maKH))
@@ -972,12 +983,12 @@ namespace banSach.Controllers
 			}
 			else
 			{
-				var gioHang = db.GioHangs.Include("ChiTietGioHangs").FirstOrDefault(g => g.MaKH == maKH);
+				var gioHang = await db.GioHangs.Include("ChiTietGioHangs").FirstOrDefaultAsync(g => g.MaKH == maKH);
 				if (gioHang != null)
 				{
 					db.ChiTietGioHangs.RemoveRange(gioHang.ChiTietGioHangs);
 					db.GioHangs.Remove(gioHang);
-					db.SaveChanges();
+					await db.SaveChangesAsync();
 				}
 			}
 		}

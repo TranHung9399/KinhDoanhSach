@@ -1,10 +1,11 @@
 ﻿using banSach.Models;
-using banSach.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Threading.Tasks;
+using System.Data.Entity;
 
 namespace banSach.Areas.Admin.Controllers
 {
@@ -13,7 +14,7 @@ namespace banSach.Areas.Admin.Controllers
 		private QLBanSachEntities db = new QLBanSachEntities();
 		// GET: Admin/HomeAdmin
 		[CheckPermission(Permission = "TK_DASHBOARD")]
-		public ActionResult Index()
+		public async Task<ActionResult> Index()
 		{
 			try
 			{
@@ -31,10 +32,11 @@ namespace banSach.Areas.Admin.Controllers
 				ViewBag.HoTen = user.HoTen;
 				ViewBag.ChucVu = Session["ChucVu"] != null ? Session["ChucVu"].ToString() : "Nhân viên";
 
-				ViewBag.TongSach = db.Saches.Count();
-				ViewBag.TongKhachHang = db.KhachHangs.Count();
-				// Lấy 10 sách bán chạy nhất
-				var bestSellerData = db.ChiTietDonHangs
+				ViewBag.TongSach = await db.Saches.CountAsync();
+				ViewBag.TongKhachHang = await db.KhachHangs.CountAsync();
+				
+                // Lấy 10 sách bán chạy nhất
+				var bestSellerData = await db.ChiTietDonHangs
 					.Where(ct => ct.Sach.Status == 1)
 					.GroupBy(ct => ct.MaSach)
 					.Select(g => new {
@@ -43,12 +45,12 @@ namespace banSach.Areas.Admin.Controllers
 					})
 					.OrderByDescending(x => x.TotalSold)
 					.Take(10)
-					.ToList();
+					.ToListAsync();
 
 				var bestSellerIds = bestSellerData.Select(x => x.MaSach).ToList();
-				var bestSellerBooks = db.Saches
+				var bestSellerBooks = await db.Saches
 					.Where(s => bestSellerIds.Contains(s.MaSach))
-					.ToList();
+					.ToListAsync();
 
 				ViewBag.BestSellerBooks = bestSellerData
 					.Select(bs => {
@@ -63,33 +65,48 @@ namespace banSach.Areas.Admin.Controllers
 					})
 					.Where(s => s != null)
 					.ToList();
+
 				// Calculate total revenue from completed orders
-				ViewBag.TongDoanhThu = db.DonDatHangs
+				ViewBag.TongDoanhThu = (await db.DonDatHangs
 					.Where(d => d.TrangThai == "Đã thanh toán" || d.TrangThai == "Hoàn tất")
-					.Sum(d => (decimal?)d.TongTien) ?? 0;
+					.SumAsync(d => (decimal?)d.TongTien)) ?? 0;
 
 				// Count completed orders
-				ViewBag.TongDonHang = db.DonDatHangs
-					.Count(d => d.TrangThai == "Đã thanh toán" || d.TrangThai == "Hoàn tất");
+				ViewBag.TongDonHang = await db.DonDatHangs
+					.CountAsync(d => d.TrangThai == "Đã thanh toán" || d.TrangThai == "Hoàn tất");
 
-				// Revenue data for chart (monthly revenue)
-				ViewBag.RevenueData = Newtonsoft.Json.JsonConvert.SerializeObject(
-					Enumerable.Range(1, 12).Select(month =>
-						db.DonDatHangs
-							.Where(d => (d.TrangThai == "Đã thanh toán" || d.TrangThai == "Hoàn tất")
-									 && d.NgayDat.HasValue
-									 && d.NgayDat.Value.Year == DateTime.Now.Year
-									 && d.NgayDat.Value.Month == month)
-							.Sum(d => (decimal?)d.TongTien) ?? 0
-					).ToList()
-				);
+				// Revenue data for chart (monthly revenue) - OPTIMIZED: Single Query using GroupBy
+                int currentYear = DateTime.Now.Year;
+                var monthlyRevenue = await db.DonDatHangs
+                    .Where(d => (d.TrangThai == "Đã thanh toán" || d.TrangThai == "Hoàn tất")
+                             && d.NgayDat.HasValue
+                             && d.NgayDat.Value.Year == currentYear)
+                    .GroupBy(d => d.NgayDat.Value.Month)
+                    .Select(g => new
+                    {
+                        Month = g.Key,
+                        Revenue = g.Sum(d => (decimal?)d.TongTien) ?? 0
+                    })
+                    .ToListAsync();
+
+                // Map database results to a 12-element array (filling missing months with 0)
+                var revenueArray = new decimal[12];
+                foreach (var item in monthlyRevenue)
+                {
+                    if (item.Month >= 1 && item.Month <= 12)
+                    {
+                        revenueArray[item.Month - 1] = item.Revenue;
+                    }
+                }
+
+				ViewBag.RevenueData = Newtonsoft.Json.JsonConvert.SerializeObject(revenueArray);
 
 				// Tạo đối tượng ViewModel để lưu trữ thống kê
 				var thongKe = new ThongKeDonHang
 				{
-					ChoXacNhan = db.DonDatHangs.Count(d => d.TrangThai == "Chờ xác nhận"),
-					DaHuy = db.DonDatHangs.Count(d => d.TrangThai == "Đã hủy"),
-					DaThanhToanVaHoanTat = db.DonDatHangs.Count(d => d.TrangThai == "Đã thanh toán" || d.TrangThai == "Hoàn tất")
+					ChoXacNhan = await db.DonDatHangs.CountAsync(d => d.TrangThai == "Chờ xác nhận"),
+					DaHuy = await db.DonDatHangs.CountAsync(d => d.TrangThai == "Đã hủy"),
+					DaThanhToanVaHoanTat = await db.DonDatHangs.CountAsync(d => d.TrangThai == "Đã thanh toán" || d.TrangThai == "Hoàn tất")
 				};
 
 				System.Diagnostics.Debug.WriteLine($"ThongKe: ChoXacNhan={thongKe.ChoXacNhan}, DaHuy={thongKe.DaHuy}, DaThanhToanVaHoanTat={thongKe.DaThanhToanVaHoanTat}");

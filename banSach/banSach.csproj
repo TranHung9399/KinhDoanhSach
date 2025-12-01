@@ -507,8 +507,6 @@
     <Content Include="css\checkout.css" />
     <Content Include="css\layout.css" />
     <Content Include="css\phantrang.css" />
-    <Content Include="Database_Schema_Checkout.sql" />
-    <Content Include="Database_Scripts\AddKhuyenMaiTable.sql" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
@@ -618,10 +616,6 @@
     <Content Include="Areas\Admin\Views\DanhGias\Details.cshtml" />
     <Content Include="Areas\Admin\Views\DanhGias\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\DanhGias\Statistics.cshtml" />
-    <Content Include="Areas\Admin\DESIGN_SYSTEM_README.md" />
-    <Content Include="App_Data\MOMO_PAYMENT_GUIDE.md" />
-    <Content Include="App_Data\MOMO_IMPLEMENTATION_SUMMARY.md" />
-    <Content Include="App_Data\MOMO_QUICK_TEST.md" />
     <Content Include="Areas\Admin\Views\MaGiamGias\Index.cshtml" />
     <Content Include="Areas\Admin\Views\MaGiamGias\Create.cshtml" />
     <Content Include="Areas\Admin\Views\MaGiamGias\Edit.cshtml" />
@@ -696,9 +690,6 @@
     <Content Include="Scripts\scrollup.js" />
     <Content Include="Scripts\slicknav.min.js" />
     <Content Include="Scripts\waypoints.min.js" />
-    <Content Include="SQL\GrantAllPermissionsToManager.sql" />
-    <Content Include="SQL\InitPermissionData.sql" />
-    <Content Include="SQL\UpdatePermissionData.sql" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -742,7 +733,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Admin\Data\" />
-    <Folder Include="Database\" />
     <Folder Include="Views\Base\" />
     <Folder Include="Views\Payment\" />
   </ItemGroup>

@@ -7,6 +7,8 @@ using System.Globalization;
 using ClosedXML.Excel;
 using System.IO;
 using Rotativa;
+using System.Data.Entity;
+using System.Threading.Tasks; // Added for Async
 
 namespace banSach.Areas.Admin.Controllers
 {
@@ -15,7 +17,7 @@ namespace banSach.Areas.Admin.Controllers
         private QLBanSachEntities db = new QLBanSachEntities();
 
         // GET: Admin/Thongke
-        public ActionResult Index(string loaiThongKe = "thang", DateTime? ngayBatDau = null, DateTime? ngayKetThuc = null)
+        public async Task<ActionResult> Index(string loaiThongKe = "thang", DateTime? ngayBatDau = null, DateTime? ngayKetThuc = null)
         {
             if (Session["AdminUser"] == null)
             {
@@ -39,13 +41,16 @@ namespace banSach.Areas.Admin.Controllers
                 loaiThongKe = "thang";
             }
 
-            // Lấy danh sách đơn hàng "Hoàn tất" hoặc "Đã thanh toán"
-            var donHangs = db.DonDatHangs
-                .Include("ChiTietDonHangs") // Sửa từ lambda sang string
+            // Base Query - AsNoTracking for performance
+            var query = db.DonDatHangs
+                .AsNoTracking()
                 .Where(d =>
                     (d.TrangThai == "Hoàn tất" || d.TrangThai == "Đã thanh toán")
-                    && d.NgayDat >= batDau && d.NgayDat <= ketThuc)
-                .ToList();
+                    && d.NgayDat >= batDau && d.NgayDat <= ketThuc);
+
+            // Calculate totals in DB
+            var tongSoDonHang = await query.CountAsync();
+            var tongDoanhThu = await query.SelectMany(d => d.ChiTietDonHangs).SumAsync(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0;
 
             // Tạo model thống kê
             var model = new ThongKe
@@ -53,56 +58,78 @@ namespace banSach.Areas.Admin.Controllers
                 NgayBatDau = batDau,
                 NgayKetThuc = ketThuc,
                 LoaiThongKe = loaiThongKe,
-                TongSoDonHang = donHangs.Count,
-                TongDoanhThu = donHangs.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0))),
+                TongSoDonHang = tongSoDonHang,
+                TongDoanhThu = tongDoanhThu,
                 ChiTiet = new List<ChiTietThongKe>()
             };
 
-            // Nhóm theo ngày, tháng hoặc năm
+            // Nhóm theo ngày, tháng hoặc năm - Execute in DB
             if (loaiThongKe == "ngay")
             {
-                model.ChiTiet = donHangs
-                    .GroupBy(o => o.NgayDat.Value.Date)
-                    .Select(g => new ChiTietThongKe
+                var data = await query
+                    .GroupBy(o => DbFunctions.TruncateTime(o.NgayDat))
+                    .Select(g => new 
                     {
-                        KhoangThoiGian = g.Key.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Date = g.Key,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => DateTime.ParseExact(r.KhoangThoiGian, "dd/MM/yyyy", CultureInfo.InvariantCulture))
-                    .ToList();
+                    .OrderBy(x => x.Date)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = x.Date.Value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
             else if (loaiThongKe == "nam")
             {
-                model.ChiTiet = donHangs
+                var data = await query
                     .GroupBy(o => o.NgayDat.Value.Year)
-                    .Select(g => new ChiTietThongKe
+                    .Select(g => new
                     {
-                        KhoangThoiGian = g.Key.ToString(),
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Year = g.Key,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => int.Parse(r.KhoangThoiGian))
-                    .ToList();
+                    .OrderBy(x => x.Year)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = x.Year.ToString(),
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
-            else
+            else // Thang
             {
-                model.ChiTiet = donHangs
+                var data = await query
                     .GroupBy(o => new { o.NgayDat.Value.Year, o.NgayDat.Value.Month })
-                    .Select(g => new ChiTietThongKe
+                    .Select(g => new
                     {
-                        KhoangThoiGian = $"{g.Key.Month}/{g.Key.Year}",
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => DateTime.ParseExact(r.KhoangThoiGian, "M/yyyy", CultureInfo.InvariantCulture))
-                    .ToList();
+                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = $"{x.Month}/{x.Year}",
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
 
             return View(model);
         }
 
-        public ActionResult ExportExcel(string loaiThongKe, DateTime? ngayBatDau, DateTime? ngayKetThuc)
+        public async Task<ActionResult> ExportExcel(string loaiThongKe, DateTime? ngayBatDau, DateTime? ngayKetThuc)
         {
             // Lấy lại dữ liệu như action Index
             var ketThuc = ngayKetThuc ?? DateTime.Now;
@@ -111,59 +138,89 @@ namespace banSach.Areas.Admin.Controllers
             {
                 loaiThongKe = "thang";
             }
-            var donHangs = db.DonDatHangs
-                .Include("ChiTietDonHangs")
+            
+            // Base Query - AsNoTracking
+            var query = db.DonDatHangs
+                .AsNoTracking()
                 .Where(d => (d.TrangThai == "Hoàn tất" || d.TrangThai == "Đã thanh toán")
-                    && d.NgayDat >= batDau && d.NgayDat <= ketThuc)
-                .ToList();
+                    && d.NgayDat >= batDau && d.NgayDat <= ketThuc);
+
+            // Calculate totals in DB
+            var tongSoDonHang = await query.CountAsync();
+            var tongDoanhThu = await query.SelectMany(d => d.ChiTietDonHangs).SumAsync(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0;
+
             var model = new ThongKe
             {
                 NgayBatDau = batDau,
                 NgayKetThuc = ketThuc,
                 LoaiThongKe = loaiThongKe,
-                TongSoDonHang = donHangs.Count,
-                TongDoanhThu = donHangs.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0))),
+                TongSoDonHang = tongSoDonHang,
+                TongDoanhThu = tongDoanhThu,
                 ChiTiet = new List<ChiTietThongKe>()
             };
+
             if (loaiThongKe == "ngay")
             {
-                model.ChiTiet = donHangs
-                    .GroupBy(o => o.NgayDat.Value.Date)
-                    .Select(g => new ChiTietThongKe
+                var data = await query
+                    .GroupBy(o => DbFunctions.TruncateTime(o.NgayDat))
+                    .Select(g => new 
                     {
-                        KhoangThoiGian = g.Key.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture),
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Date = g.Key,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => System.DateTime.ParseExact(r.KhoangThoiGian, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture))
-                    .ToList();
+                    .OrderBy(x => x.Date)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = x.Date.Value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
             else if (loaiThongKe == "nam")
             {
-                model.ChiTiet = donHangs
+                var data = await query
                     .GroupBy(o => o.NgayDat.Value.Year)
-                    .Select(g => new ChiTietThongKe
+                    .Select(g => new
                     {
-                        KhoangThoiGian = g.Key.ToString(),
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Year = g.Key,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => int.Parse(r.KhoangThoiGian))
-                    .ToList();
+                    .OrderBy(x => x.Year)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = x.Year.ToString(),
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
             else
             {
-                model.ChiTiet = donHangs
+                var data = await query
                     .GroupBy(o => new { o.NgayDat.Value.Year, o.NgayDat.Value.Month })
-                    .Select(g => new ChiTietThongKe
+                    .Select(g => new
                     {
-                        KhoangThoiGian = $"{g.Key.Month}/{g.Key.Year}",
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => System.DateTime.ParseExact(r.KhoangThoiGian, "M/yyyy", System.Globalization.CultureInfo.InvariantCulture))
-                    .ToList();
+                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = $"{x.Month}/{x.Year}",
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
+
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("ThongKe");
@@ -187,7 +244,7 @@ namespace banSach.Areas.Admin.Controllers
             }
         }
 
-        public ActionResult ExportPdf(string loaiThongKe, DateTime? ngayBatDau, DateTime? ngayKetThuc)
+        public async Task<ActionResult> ExportPdf(string loaiThongKe, DateTime? ngayBatDau, DateTime? ngayKetThuc)
         {
             var ketThuc = ngayKetThuc ?? DateTime.Now;
             var batDau = ngayBatDau ?? ketThuc.AddDays(-30);
@@ -195,58 +252,87 @@ namespace banSach.Areas.Admin.Controllers
             {
                 loaiThongKe = "thang";
             }
-            var donHangs = db.DonDatHangs
-                .Include("ChiTietDonHangs")
+
+            // Base Query - AsNoTracking
+            var query = db.DonDatHangs
+                .AsNoTracking()
                 .Where(d => (d.TrangThai == "Hoàn tất" || d.TrangThai == "Đã thanh toán")
-                    && d.NgayDat >= batDau && d.NgayDat <= ketThuc)
-                .ToList();
+                    && d.NgayDat >= batDau && d.NgayDat <= ketThuc);
+
+            // Calculate totals in DB
+            var tongSoDonHang = await query.CountAsync();
+            var tongDoanhThu = await query.SelectMany(d => d.ChiTietDonHangs).SumAsync(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0;
+
             var model = new ThongKe
             {
                 NgayBatDau = batDau,
                 NgayKetThuc = ketThuc,
                 LoaiThongKe = loaiThongKe,
-                TongSoDonHang = donHangs.Count,
-                TongDoanhThu = donHangs.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0))),
+                TongSoDonHang = tongSoDonHang,
+                TongDoanhThu = tongDoanhThu,
                 ChiTiet = new List<ChiTietThongKe>()
             };
+
             if (loaiThongKe == "ngay")
             {
-                model.ChiTiet = donHangs
-                    .GroupBy(o => o.NgayDat.Value.Date)
-                    .Select(g => new ChiTietThongKe
+                var data = await query
+                    .GroupBy(o => DbFunctions.TruncateTime(o.NgayDat))
+                    .Select(g => new 
                     {
-                        KhoangThoiGian = g.Key.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture),
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Date = g.Key,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => System.DateTime.ParseExact(r.KhoangThoiGian, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture))
-                    .ToList();
+                    .OrderBy(x => x.Date)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = x.Date.Value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
             else if (loaiThongKe == "nam")
             {
-                model.ChiTiet = donHangs
+                var data = await query
                     .GroupBy(o => o.NgayDat.Value.Year)
-                    .Select(g => new ChiTietThongKe
+                    .Select(g => new
                     {
-                        KhoangThoiGian = g.Key.ToString(),
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Year = g.Key,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => int.Parse(r.KhoangThoiGian))
-                    .ToList();
+                    .OrderBy(x => x.Year)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = x.Year.ToString(),
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
             else
             {
-                model.ChiTiet = donHangs
+                var data = await query
                     .GroupBy(o => new { o.NgayDat.Value.Year, o.NgayDat.Value.Month })
-                    .Select(g => new ChiTietThongKe
+                    .Select(g => new
                     {
-                        KhoangThoiGian = $"{g.Key.Month}/{g.Key.Year}",
-                        SoDonHang = g.Count(),
-                        DoanhThu = g.Sum(o => o.ChiTietDonHangs.Sum(c => (c.SoLuong ?? 0) * (c.DonGia ?? 0)))
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Count = g.Count(),
+                        Revenue = g.Sum(o => o.ChiTietDonHangs.Sum(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0)
                     })
-                    .OrderBy(r => System.DateTime.ParseExact(r.KhoangThoiGian, "M/yyyy", System.Globalization.CultureInfo.InvariantCulture))
-                    .ToList();
+                    .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                    .ToListAsync();
+
+                model.ChiTiet = data.Select(x => new ChiTietThongKe
+                {
+                    KhoangThoiGian = $"{x.Month}/{x.Year}",
+                    SoDonHang = x.Count,
+                    DoanhThu = x.Revenue
+                }).ToList();
             }
             return new Rotativa.ViewAsPdf("ExportPdf", model)
             {
@@ -257,3 +343,4 @@ namespace banSach.Areas.Admin.Controllers
         }
     }
 }
+

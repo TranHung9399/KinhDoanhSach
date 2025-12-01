@@ -8,6 +8,7 @@ using System.Web.Mvc;
 using Microsoft.Owin.Security;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Data.Entity;
 
 namespace banSach.Controllers
 {
@@ -22,7 +23,7 @@ namespace banSach.Controllers
         // POST: Dangnhap
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Index(FormCollection form)
+        public async Task<ActionResult> Index(FormCollection form)
         {
             string username = form["Username"];
             string password = form["Password"];
@@ -33,8 +34,8 @@ namespace banSach.Controllers
                 return View();
             }
 
-            var khachHang = db.KhachHangs
-                .FirstOrDefault(kh => (kh.SoDienThoai == username || kh.Email == username) && kh.MatKhau == password);
+            var khachHang = await db.KhachHangs
+                .FirstOrDefaultAsync(kh => (kh.SoDienThoai == username || kh.Email == username) && kh.MatKhau == password);
 
             if (khachHang != null)
             {
@@ -47,17 +48,17 @@ namespace banSach.Controllers
 					var cart = (List<ChiTietGioHang>)Session["Cart"];
 					string maKH = khachHang.MaKH;
 
-					var gioHang = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
+					var gioHang = await db.GioHangs.FirstOrDefaultAsync(g => g.MaKH == maKH);
 					if (gioHang == null)
 					{
 						gioHang = new GioHang { MaGioHang = Guid.NewGuid().ToString(), MaKH = maKH, NgayTao = DateTime.Now };
 						db.GioHangs.Add(gioHang);
-						db.SaveChanges();
+						await db.SaveChangesAsync();
 					}
 
 					foreach (var item in cart)
 					{
-						var chiTiet = db.ChiTietGioHangs.FirstOrDefault(ct => ct.MaGioHang == gioHang.MaGioHang && ct.MaSach == item.MaSach);
+						var chiTiet = await db.ChiTietGioHangs.FirstOrDefaultAsync(ct => ct.MaGioHang == gioHang.MaGioHang && ct.MaSach == item.MaSach);
 						if (chiTiet == null)
 						{
 							db.ChiTietGioHangs.Add(new ChiTietGioHang
@@ -74,11 +75,11 @@ namespace banSach.Controllers
 							chiTiet.SoLuong += item.SoLuong;
 						}
 					}
-					db.SaveChanges();
+					await db.SaveChangesAsync();
 					Session["Cart"] = null; // Xoá session sau khi merge
 				}
                 TempData["Success"] = "Đăng nhập thành công!";
-return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Home");
             }
             else
             {
@@ -92,9 +93,9 @@ return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
-        public ActionResult ForgotPassword(string Email)
+        public async Task<ActionResult> ForgotPassword(string Email)
         {
-            var user = db.KhachHangs.FirstOrDefault(k => k.Email == Email);
+            var user = await db.KhachHangs.FirstOrDefaultAsync(k => k.Email == Email);
             if (user == null)
             {
                 TempData["Error"] = "Email không tồn tại trong hệ thống!";
@@ -122,8 +123,9 @@ return RedirectToAction("Index", "Home");
 
 
             SendMail sendMail = new SendMail();
-            bool result = sendMail.SendMailFunction(user.Email, subject, body);
-
+            // Note: SendMailFunction is likely synchronous. 
+            // Ideally we should refactor SendMail to be async, but for now wrapping it in Task.Run prevents blocking the request thread.
+            await Task.Run(() => sendMail.SendMailFunction(user.Email, subject, body));
             
             return View();
         }
@@ -139,7 +141,7 @@ return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
-        public ActionResult ResetPassword(string token, string newPassword)
+        public async Task<ActionResult> ResetPassword(string token, string newPassword)
         {
             // Kiểm tra xem token có hợp lệ không
             var maKH = Session["ResetToken_" + token];
@@ -150,7 +152,7 @@ return RedirectToAction("Index", "Home");
             }
 
             // Tìm người dùng từ cơ sở dữ liệu
-            var user = db.KhachHangs.Find(maKH);
+            var user = await db.KhachHangs.FindAsync(maKH);
             if (user == null)
             {
                 TempData["Error"] = "Người dùng không tồn tại!";
@@ -168,7 +170,7 @@ return RedirectToAction("Index", "Home");
             user.MatKhau = newPassword; // Lưu mật khẩu trực tiếp
 
             // Lưu thay đổi vào cơ sở dữ liệu
-            db.SaveChanges();
+            await db.SaveChangesAsync();
 
             // Xóa session và thông báo thành công
             Session.Remove("ResetToken_" + token);
@@ -187,7 +189,7 @@ return RedirectToAction("Index", "Home");
         }
 
         // Callback từ Google
-        public ActionResult GoogleCallback()
+        public async Task<ActionResult> GoogleCallback()
         {
             try
             {
@@ -204,7 +206,7 @@ return RedirectToAction("Index", "Home");
                     TempData["Error"] = "Không lấy được email từ Google!";
                     return RedirectToAction("Index");
                 }
-                var khachHang = db.KhachHangs.FirstOrDefault(kh => kh.Email == email);
+                var khachHang = await db.KhachHangs.FirstOrDefaultAsync(kh => kh.Email == email);
                 if (khachHang == null)
                 {
                     khachHang = new KhachHang
@@ -215,7 +217,7 @@ return RedirectToAction("Index", "Home");
                         MatKhau = Guid.NewGuid().ToString()
                     };
                     db.KhachHangs.Add(khachHang);
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                 }
                 Session["KhachHang"] = khachHang;
                 Session["MaKH"] = khachHang.MaKH;
