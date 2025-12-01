@@ -1,20 +1,23 @@
-﻿using System;
+﻿using banSach.Areas.Admin;
+using banSach.Models;
+using PagedList;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using banSach.Models;
-using System.IO;
-using PagedList;
 using System.Web.UI;
 
 namespace bansach.Areas.Admin.Controllers
 {
-    public class SachsController : Controller
+	[AdminAuthorize(Roles = "Quản Lý, Nhân viên")]
+	[CheckPermission]
+	public class SachsController : Controller
     {
         private QLBanSachEntities db = new QLBanSachEntities();
 
@@ -29,9 +32,151 @@ namespace bansach.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
 
+		// GET: Admin/Saches/CreateModal
+		[CheckPermission(Permission = "SACH_CREATE")]
+		public ActionResult CreateModal()
+		{
+			ViewBag.MaLoai = new SelectList(db.Loais, "MaLoai", "TenLoai");
+			ViewBag.MaNXB = new SelectList(db.NhaXuatBans, "MaNXB", "TenNXB");
+			return PartialView("_CreatePartial");
+		}
 
-        // GET: Admin/Saches
-        public async Task<ActionResult> Index(int? page, string searchString, string searchType, string categoryFilter, string statusFilter)
+		// POST: Admin/Saches/CreateModal
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[CheckPermission(Permission = "SACH_CREATE")]
+		public async Task<JsonResult> CreateModal([Bind(Include = "TenSach,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai,Status")] Sach sach, HttpPostedFileBase HinhAnh)
+		{
+			try
+			{
+				if (ModelState.IsValid)
+				{
+					// Sinh mã sách tự động
+					var lastSach = db.Saches.OrderByDescending(s => s.MaSach).FirstOrDefault();
+					string newMaSach = "S001";
+
+					if (lastSach != null)
+					{
+						string lastMa = lastSach.MaSach.Replace("S", "");
+						int so = int.Parse(lastMa) + 1;
+						newMaSach = "S" + so.ToString("D3");
+					}
+
+					sach.MaSach = newMaSach;
+
+					// Xử lý upload hình nếu có
+					if (HinhAnh != null && HinhAnh.ContentLength > 0)
+					{
+						var fileName = Path.GetFileName(HinhAnh.FileName);
+						var path = Path.Combine(Server.MapPath("~/img/sach/"), fileName);
+						HinhAnh.SaveAs(path);
+						sach.Hinh = fileName;
+					}
+
+					if (sach.GiaBan.HasValue)
+						sach.GiaChietKhau = Math.Round(sach.GiaBan.Value * 0.9m, 0);
+
+					db.Saches.Add(sach);
+					await db.SaveChangesAsync();
+
+					return Json(new { success = true, message = "Thêm sách thành công!" });
+				}
+
+				return Json(new { success = false, message = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+			}
+		}
+
+		// GET: Admin/Saches/DetailsModal
+		[CheckPermission(Permission = "SACH_DETAIL")]
+		public async Task<ActionResult> DetailsModal(string id)
+		{
+			if (string.IsNullOrEmpty(id))
+			{
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+			}
+			Sach sach = await db.Saches.FindAsync(id);
+			if (sach == null)
+			{
+				return HttpNotFound();
+			}
+			return PartialView("_DetailsPartial", sach);
+		}
+
+		// GET: Admin/Saches/EditModal
+		[CheckPermission(Permission = "SACH_EDIT")]
+		public async Task<ActionResult> EditModal(string id)
+		{
+			if (string.IsNullOrEmpty(id))
+			{
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+			}
+			Sach sach = await db.Saches.FindAsync(id);
+			if (sach == null)
+			{
+				return HttpNotFound();
+			}
+			ViewBag.MaLoai = new SelectList(db.Loais, "MaLoai", "TenLoai", sach.MaLoai);
+			ViewBag.MaNXB = new SelectList(db.NhaXuatBans, "MaNXB", "TenNXB", sach.MaNXB);
+			return PartialView("_EditPartial", sach);
+		}
+
+		// POST: Admin/Saches/EditModal
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		[CheckPermission(Permission = "SACH_EDIT")]
+		public async Task<JsonResult> EditModal([Bind(Include = "MaSach,TenSach,Hinh,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai")] Sach sach, HttpPostedFileBase HinhAnh)
+		{
+			try
+			{
+				if (ModelState.IsValid)
+				{
+					// Lấy sách cũ từ DB để giữ lại hình ảnh nếu không có hình mới
+					var sachCu = await db.Saches.AsNoTracking().FirstOrDefaultAsync(s => s.MaSach == sach.MaSach);
+					if (sachCu == null)
+					{
+						return Json(new { success = false, message = "Không tìm thấy sách!" });
+					}
+
+					if (HinhAnh != null && HinhAnh.ContentLength > 0)
+					{
+						var fileName = Path.GetFileName(HinhAnh.FileName);
+						var path = Path.Combine(Server.MapPath("~/img/sach/"), fileName);
+						HinhAnh.SaveAs(path);
+						sach.Hinh = fileName;
+					}
+					else
+					{
+						// Giữ lại hình cũ nếu không upload ảnh mới
+						sach.Hinh = sachCu.Hinh;
+					}
+
+					sach.Status = 1;
+					// Tính lại giá chiết khấu (giảm 10%)
+					if (sach.GiaBan.HasValue)
+						sach.GiaChietKhau = Math.Round(sach.GiaBan.Value * 0.9m, 0);
+
+					db.Entry(sach).State = EntityState.Modified;
+					await db.SaveChangesAsync();
+
+					return Json(new { success = true, message = "Cập nhật sách thành công!" });
+				}
+
+				return Json(new { success = false, message = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại." });
+			}
+			catch (Exception ex)
+			{
+				return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+			}
+		}
+
+
+		[CheckPermission(Permission = "SACH_VIEW")]
+		// GET: Admin/Saches
+		public async Task<ActionResult> Index(int? page, string searchString, string searchType, string categoryFilter, string statusFilter)
         {
             if (Session["AdminUser"] == null)
             {
@@ -86,8 +231,9 @@ namespace bansach.Areas.Admin.Controllers
             return View(danhSach);
         }
 
-        // GET: Admin/Saches/Details/5
-        public async Task<ActionResult> Details(string id)
+		[CheckPermission(Permission = "SACH_DETAIL")]
+		// GET: Admin/Saches/Details/5
+		public async Task<ActionResult> Details(string id)
         {
             if (Session["AdminUser"] == null)
             {
@@ -113,8 +259,9 @@ namespace bansach.Areas.Admin.Controllers
             return View(sach);
         }
 
-        // GET: Admin/Saches/Create
-        public ActionResult Create()
+		[CheckPermission(Permission = "SACH_CREATE")]
+		// GET: Admin/Saches/Create
+		public ActionResult Create()
         {
             if (Session["AdminUser"] == null)
             {
@@ -133,10 +280,11 @@ namespace bansach.Areas.Admin.Controllers
             return View();
         }
 
-        // POST: Admin/Saches/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+		[CheckPermission(Permission = "SACH_CREATE")]
+		// POST: Admin/Saches/Create
+		// To protect from overposting attacks, enable the specific properties you want to bind to, for 
+		// more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+		[HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create([Bind(Include = "TenSach,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai,Status")] Sach sach, HttpPostedFileBase HinhAnh)
         {
@@ -177,8 +325,9 @@ namespace bansach.Areas.Admin.Controllers
             return View(sach);
         }
 
-        // GET: Admin/Saches/Edit/5
-        public async Task<ActionResult> Edit(string id)
+		[CheckPermission(Permission = "SACH_EDIT")]
+		// GET: Admin/Saches/Edit/5
+		public async Task<ActionResult> Edit(string id)
         {
             if (Session["AdminUser"] == null)
             {
@@ -206,10 +355,11 @@ namespace bansach.Areas.Admin.Controllers
             return View(sach);
         }
 
-        // POST: Admin/Saches/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+		[CheckPermission(Permission = "SACH_EDIT")]
+		// POST: Admin/Saches/Edit/5
+		// To protect from overposting attacks, enable the specific properties you want to bind to, for 
+		// more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+		[HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit([Bind(Include = "MaSach,TenSach,Hinh,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai")] Sach sach, HttpPostedFileBase HinhAnh)
         {
@@ -252,9 +402,9 @@ namespace bansach.Areas.Admin.Controllers
             return View(sach);
         }
 
-
-        // GET: Admin/Saches/Delete/5
-        public async Task<ActionResult> Delete(string id)
+		[CheckPermission(Permission = "SACH_DELETE")]
+		// GET: Admin/Saches/Delete/5
+		public async Task<ActionResult> Delete(string id)
         {
             if (id == null)
             {
@@ -268,8 +418,9 @@ namespace bansach.Areas.Admin.Controllers
             return View(sach);
         }
 
-        // POST: Admin/Saches/Delete/5
-        [HttpPost, ActionName("Delete")]
+		[CheckPermission(Permission = "SACH_DELETE")]
+		// POST: Admin/Saches/Delete/5
+		[HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(string id)
         {
