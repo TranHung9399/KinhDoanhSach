@@ -11,6 +11,7 @@ using banSach.Helper;
 using banSach.Models;
 using Newtonsoft.Json;
 using PagedList;
+using System.Threading.Tasks;
 
 namespace banSach.Areas.Admin.Controllers
 {
@@ -21,13 +22,17 @@ namespace banSach.Areas.Admin.Controllers
         private QLBanSachEntities db = new QLBanSachEntities();
 
 		[CheckPermission(Permission = "DH_DETAIL")]
-		public ActionResult Invoice(string id)
+		public async Task<ActionResult> Invoice(string id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            DonDatHang donDatHang = db.DonDatHangs.Include(d => d.ChiTietDonHangs.Select(c => c.Sach)).FirstOrDefault(d => d.MaDonHang == id);
+            // Tối ưu: AsNoTracking() cho read-only query, eager loading để tránh N+1
+            DonDatHang donDatHang = await db.DonDatHangs
+                .AsNoTracking()
+                .Include(d => d.ChiTietDonHangs.Select(c => c.Sach))
+                .FirstOrDefaultAsync(d => d.MaDonHang == id);
             if (donDatHang == null)
             {
                 return HttpNotFound();
@@ -37,9 +42,9 @@ namespace banSach.Areas.Admin.Controllers
 
 		[HttpPost]
 		[CheckPermission(Permission = "DH_UPDATE_STATUS")]
-		public ActionResult CapNhatTrangThai(string maDonHang, string trangThai)
+		public async Task<ActionResult> CapNhatTrangThai(string maDonHang, string trangThai)
         {
-            var donHang = db.DonDatHangs.Find(maDonHang);
+            var donHang = await db.DonDatHangs.FindAsync(maDonHang);
             if (donHang == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy đơn hàng!";
@@ -49,7 +54,7 @@ namespace banSach.Areas.Admin.Controllers
             donHang.TrangThai = trangThai;
 
             // ✅ THÊM: Tự động cập nhật trạng thái thanh toán cho COD
-            var thanhToan = db.ThanhToans.FirstOrDefault(t => t.MaDonHang == maDonHang);
+            var thanhToan = await db.ThanhToans.FirstOrDefaultAsync(t => t.MaDonHang == maDonHang);
             if (thanhToan != null && thanhToan.PhuongThucThanhToan == 1) // COD
             {
                 // Khi đơn hàng "Hoàn tất", tự động chuyển trạng thái thanh toán sang "Đã thanh toán"
@@ -61,7 +66,7 @@ namespace banSach.Areas.Admin.Controllers
                 }
             }
 
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             TempData["SuccessMessage"] = "Cập nhật trạng thái thành công!";
 
             // Gửi email nếu trạng thái là "Đang giao hàng"
@@ -83,7 +88,7 @@ namespace banSach.Areas.Admin.Controllers
 
                 foreach (var item in donHang.ChiTietDonHangs)
                 {
-                    var sach = db.Saches.Find(item.MaSach);
+                    var sach = await db.Saches.FindAsync(item.MaSach);
                     if (sach != null)
                     {
                         var thanhTien = (item.SoLuong ?? 0) * (item.DonGia ?? 0);
@@ -114,7 +119,8 @@ namespace banSach.Areas.Admin.Controllers
                 try
                 {
                     SendMail sendMail = new SendMail();
-                    sendMail.SendMailFunction(donHang.Email, "Thông báo về trạng thái đơn hàng: Đang giao hàng", emailBody);
+                    // Async wrapper for email sending
+                    await Task.Run(() => sendMail.SendMailFunction(donHang.Email, "Thông báo về trạng thái đơn hàng: Đang giao hàng", emailBody));
                     TempData["SuccessMessage"] = "Đã gửi email xác nhận về trạng thái đơn hàng!";
                 }
                 catch (Exception ex)
@@ -122,7 +128,7 @@ namespace banSach.Areas.Admin.Controllers
                     TempData["ErrorMessage"] = "Đã có lỗi khi gửi email: " + ex.Message;
                 }
 
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
 
             return RedirectToAction("Index");
@@ -148,7 +154,11 @@ namespace banSach.Areas.Admin.Controllers
             ViewBag.CurrentSearchType = searchType ?? "name";
             ViewBag.StatusFilter = statusFilter;
 
-            var donDatHangs = db.DonDatHangs.Include(d => d.ChiTietDonHangs).AsQueryable();
+            // Tối ưu: AsNoTracking() cho read-only query và eager loading
+            var donDatHangs = db.DonDatHangs
+                .AsNoTracking()
+                .Include(d => d.ChiTietDonHangs)
+                .AsQueryable();
             
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -177,18 +187,20 @@ namespace banSach.Areas.Admin.Controllers
 
 		// GET: Admin/DonDatHangs/Details/5
 		[CheckPermission(Permission = "DH_DETAIL")]
-		public ActionResult Details(string id)
+		public async Task<ActionResult> Details(string id)
 		{
 			if (id == null)
 			{
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 			}
 
-			var donDatHang = db.DonDatHangs
+			// Tối ưu: AsNoTracking() cho read-only query và eager loading
+			var donDatHang = await db.DonDatHangs
+				.AsNoTracking()
 				.Include(d => d.ChiTietDonHangs.Select(ct => ct.Sach))
 				.Include(d => d.KhachHang)  // ✅ THÊM: Include KhachHang
 				.Include(d => d.ThanhToans)  // ✅ THÊM: Include ThanhToan
-				.FirstOrDefault(d => d.MaDonHang == id);
+				.FirstOrDefaultAsync(d => d.MaDonHang == id);
 
 			if (donDatHang == null)
 			{
@@ -198,9 +210,9 @@ namespace banSach.Areas.Admin.Controllers
 			// ✅ THÊM: Lấy thông tin mã giảm giá đã dùng
 			if (!string.IsNullOrEmpty(donDatHang.MaGiamGia))
 			{
-				var suDungMGG = db.SuDungMaGiamGias
+				var suDungMGG = await db.SuDungMaGiamGias
 					.Include(s => s.MaGiamGia)
-					.FirstOrDefault(s => s.MaDonHang == id);
+					.FirstOrDefaultAsync(s => s.MaDonHang == id);
 				ViewBag.SuDungMaGiamGia = suDungMGG;
 			}
 
@@ -208,7 +220,7 @@ namespace banSach.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/DonDatHangs/Create
-		public ActionResult Create()
+		public async Task<ActionResult> Create()
         {
             if (Session["AdminUser"] == null)
             {
@@ -222,10 +234,10 @@ namespace banSach.Areas.Admin.Controllers
             }
             ViewBag.HoTen = user.HoTen;
             // Fetch books with Status = 1
-            var sachList = db.Saches
+            var sachList = await db.Saches
                 .Where(s => s.Status == 1)
                 .Select(s => new { s.MaSach, s.TenSach, s.GiaBan })
-                .ToList();
+                .ToListAsync();
 
             if (!sachList.Any())
             {
@@ -251,7 +263,7 @@ namespace banSach.Areas.Admin.Controllers
         // POST: Admin/DonDatHangs/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(DonDatHang model)
+        public async Task<ActionResult> Create(DonDatHang model)
         {
             if (model.ChiTietDonHangs == null || !model.ChiTietDonHangs.Any())
             {
@@ -291,7 +303,7 @@ namespace banSach.Areas.Admin.Controllers
 
                 try
                 {
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Tạo đơn hàng thành công!";
                     return RedirectToAction("Index");
                 }
@@ -302,8 +314,9 @@ namespace banSach.Areas.Admin.Controllers
                 }
             }
 
+            var sachList = await db.Saches.Where(s => s.Status == 1).Select(s => new { s.MaSach, s.TenSach, s.GiaBan }).ToListAsync();
             ViewBag.SachListJson = JsonConvert.SerializeObject(
-                db.Saches.Where(s => s.Status == 1).Select(s => new { s.MaSach, s.TenSach, s.GiaBan }).ToList(),
+                sachList,
                 new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }
             );
             return View(model);

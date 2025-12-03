@@ -15,7 +15,9 @@ namespace banSach.Controllers
 		{
 			try
 			{
+				// Tối ưu: AsNoTracking() cho read-only query
 				var reviews = db.DanhGias
+					.AsNoTracking()
 					.Where(d => d.MaSach == maSach)
 					.OrderByDescending(d => d.NgayDanhGia)
 					.Select(d => new
@@ -51,17 +53,19 @@ namespace banSach.Controllers
 					return Json(new { success = false, message = "Vui lòng đăng nhập để đánh giá" });
 				}
 
-				// Check if user already reviewed this book
-				var existingReview = db.DanhGias.FirstOrDefault(d => d.MaSach == maSach && d.MaKH == maKH);
-				if (existingReview != null)
-				{
-					return Json(new { success = false, message = "Bạn đã đánh giá sách này rồi. Vui lòng sửa đánh giá cũ." });
-				}
+			// Check if user already reviewed this book with AsNoTracking()
+			var existingReview = db.DanhGias
+									.AsNoTracking()
+									.FirstOrDefault(d => d.MaSach == maSach && d.MaKH == maKH);
+			if (existingReview != null)
+			{
+				return Json(new { success = false, message = "Bạn đã đánh giá sách này rồi. Vui lòng sửa đánh giá cũ." });
+			}
 
-				// Generate new ID
-				var maxId = db.DanhGias.Any()
-					? db.DanhGias.Max(d => d.MaDanhGia)
-					: "DG0000";
+			// Generate new ID - Tối ưu: Tính Max tại SQL level
+			var maxId = db.DanhGias.Any()
+				? db.DanhGias.Max(d => d.MaDanhGia)
+				: "DG0000";
 
 				// Validate and parse maxId safely
 				int numericPart = 0;

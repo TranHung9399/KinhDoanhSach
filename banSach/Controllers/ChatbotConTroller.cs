@@ -1,5 +1,4 @@
 ﻿using System;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +18,7 @@ namespace banSach.Controllers
 		}
 
 		[HttpPost]
+		[ValidateInput(false)]
 		public async Task<JsonResult> SendMessage(string userMessage, string historyJson)
 		{
 			try

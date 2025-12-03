@@ -23,7 +23,9 @@ namespace banSach.Controllers
 			int pageSize = 12;
 			int pageNumber = page ?? 1;
 
+			// Tối ưu: AsNoTracking() cho read-only query
 			var favorites = db.YeuThiches
+				.AsNoTracking()
 				.Where(y => y.MaKH == maKH)
 				.OrderByDescending(y => y.NgayThem)
 				.Select(y => y.Sach)
@@ -39,25 +41,29 @@ namespace banSach.Controllers
 		[ValidateAjaxAntiForgeryToken]
 		public JsonResult AddFavorite(string maSach)
 		{
-			try
-			{
-				var maKH = Session["MaKH"]?.ToString();
-				if (string.IsNullOrEmpty(maKH))
+				try
 				{
-					return Json(new { success = false, message = "Vui lòng đăng nhập" });
-				}
+					var maKH = Session["MaKH"]?.ToString();
+					if (string.IsNullOrEmpty(maKH))
+					{
+						return Json(new { success = false, message = "Vui lòng đăng nhập" });
+					}
 
-				// Check if already in favorites
-				var existing = db.YeuThiches.FirstOrDefault(y => y.MaKH == maKH && y.MaSach == maSach);
-				if (existing != null)
-				{
-					return Json(new { success = false, message = "Sách đã có trong danh sách yêu thích" });
-				}
+					// Tối ưu: AsNoTracking() cho read-only query
+					// Check if already in favorites
+					var existing = db.YeuThiches
+									.AsNoTracking()
+									.FirstOrDefault(y => y.MaKH == maKH && y.MaSach == maSach);
+					if (existing != null)
+					{
+						return Json(new { success = false, message = "Sách đã có trong danh sách yêu thích" });
+					}
 
-				// Generate new ID
-				var maxId = db.YeuThiches.Any()
-					? db.YeuThiches.Max(y => y.MaYeuThich)
-					: "YT0000";
+					// Tối ưu: Tính Max tại SQL level
+					// Generate new ID
+					var maxId = db.YeuThiches.Any()
+						? db.YeuThiches.Max(y => y.MaYeuThich)
+						: "YT0000";
 
 				// Validate and parse maxId safely
 				int numericPart = 0;
@@ -122,15 +128,16 @@ namespace banSach.Controllers
 		[ValidateAjaxAntiForgeryToken]
 		public JsonResult ToggleFavorite(string maSach)
 		{
-			try
-			{
-				var maKH = Session["MaKH"]?.ToString();
-				if (string.IsNullOrEmpty(maKH))
+				try
 				{
-					return Json(new { success = false, message = "Vui lòng đăng nhập", needLogin = true });
-				}
+					var maKH = Session["MaKH"]?.ToString();
+					if (string.IsNullOrEmpty(maKH))
+					{
+						return Json(new { success = false, message = "Vui lòng đăng nhập", needLogin = true });
+					}
 
-				var existing = db.YeuThiches.FirstOrDefault(y => y.MaKH == maKH && y.MaSach == maSach);
+					// Tối ưu: Sử dụng AsNoTracking() cho check query, nhưng không dùng khi cần xóa
+					var existing = db.YeuThiches.FirstOrDefault(y => y.MaKH == maKH && y.MaSach == maSach);
 
 				if (existing != null)
 				{

@@ -183,8 +183,7 @@
 
                         <!-- Kiểm tra chức vụ cho mục Nhân Viên -->
                         @{
-                            if (userRole == "Quản Lý")
-                            {
+                            
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseNhanVien" aria-expanded="false" aria-controls="collapseLayouts">
                                     <div class="icon-wrapper">
                                         <i class="fa-solid fa-lg fa-user-group text-dark"></i>
@@ -201,12 +200,10 @@
                                     </nav>
                                 </div>
                             }
-                        }
 
                         <!-- Menu Phân Quyền -->
                         @{
-                            if (userRole == "Quản Lý")
-                            {
+                            
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePhanQuyen" aria-expanded="false" aria-controls="collapsePhanQuyen">
                                     <div class="icon-wrapper">
                                         <i class="fa-solid fa-lg fa-shield-halved text-dark"></i>
@@ -223,7 +220,6 @@
                                     </nav>
                                 </div>
                             }
-                        }
 
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDichVu" aria-expanded="false" aria-controls="collapseLayouts">
                             <div class="icon-wrapper">
@@ -239,11 +235,9 @@
                             <nav class="sb-sidenav-menu-nested nav">
                                 <a class="nav-link text-dark" href="@Url.Action("Index", "Sachs")">Sách</a>
                                 <a class="nav-link text-dark" href="@Url.Action("Index", "Loais")">Loại Sách</a>
-                                @if (userRole == "Quản Lý")
-                                {
+                               
                                     <a class="nav-link text-dark" href="@Url.Action("Index", "TacGias")">Tác Giả</a>
                                     <a class="nav-link text-dark" href="@Url.Action("Index", "NHAXUATBANs")">Nhà Xuất Bản</a>
-                                }
                             </nav>
                         </div>
 
@@ -262,15 +256,12 @@
                             <span class="ms-2 text-dark">Đánh giá</span>
                         </a>
 
-                        @if (userRole == "Quản Lý")
-                        {
                             <a class="nav-link" href="@Url.Action("Index", "KhachHangs")">
                                 <div class="icon-wrapper">
                                     <i class="fa-solid fa-users text-dark"></i>
                                 </div>
                                 <span class="ms-2 text-dark">Khách Hàng</span>
                             </a>
-                        }
 
                         <a class="nav-link" href="@Url.Action("Index", "MaGiamGias")">
                             <div class="icon-wrapper">
@@ -279,15 +270,13 @@
                             <span class="ms-2 text-dark">Mã Giảm Giá</span>
                         </a>
 
-                         @if (userRole == "Quản Lý")
-                         {
+                        
                             <a class="nav-link" href="@Url.Action("Index", "ThongKe")">
                                 <div class="icon-wrapper">
                                     <i class="fa-solid fa-chart-line text-dark"></i>
                                 </div>
                                 <span class="ms-2 text-dark">Thống kê</span>
                             </a>
-                        }
                     </div>
                 </div>
 

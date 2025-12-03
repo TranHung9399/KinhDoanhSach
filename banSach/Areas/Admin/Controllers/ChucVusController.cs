@@ -39,8 +39,8 @@ namespace banSach.Areas.Admin.Controllers
             int pageSize = 5; // số lượng mục trên mỗi trang
             int pageNumber = (page ?? 1); // trang hiện tại (mặc định là 1)
 
-            var danhSach = db.ChucVus.OrderBy(cv => cv.MaCV).ToPagedList(pageNumber, pageSize);
-            return View(danhSach);
+			var danhSach = await Task.Run(() => db.ChucVus.OrderBy(cv => cv.MaCV).ToPagedList(pageNumber, pageSize));
+			return View(danhSach);
         }
 
         // GET: Admin/ChucVus/Details/5

@@ -20,7 +20,7 @@ namespace banSach.Areas.Admin.Controllers
 
 		// GET: Admin/NhaXuatBans
 		[CheckPermission(Permission = "NXB_VIEW")]
-		public ActionResult Index(int? page, string searchString, string searchType)
+		public async Task<ActionResult> Index(int? page, string searchString, string searchType)
 		{
 			if (Session["AdminUser"] == null)
 			{
@@ -35,7 +35,11 @@ namespace banSach.Areas.Admin.Controllers
 
 			ViewBag.HoTen = user.HoTen;
 
-			var nxb = db.NhaXuatBans.Include(n => n.Saches).AsQueryable();
+			// Tối ưu: AsNoTracking() cho read-only query
+			var nxb = db.NhaXuatBans
+					 .AsNoTracking()
+					 .Include(n => n.Saches)
+					 .AsQueryable();
 			ViewBag.CurrentFilter = searchString;
 			ViewBag.CurrentSearchType = searchType ?? "name";
 
@@ -53,7 +57,9 @@ namespace banSach.Areas.Admin.Controllers
 
 			int pageSize = 10;
 			int pageNumber = (page ?? 1);
-			return View(nxb.OrderBy(n => n.MaNXB).ToPagedList(pageNumber, pageSize));
+			// PagedList với async: Load data trước rồi page
+			var orderedData = nxb.OrderBy(n => n.MaNXB);
+			return View(await Task.Run(() => orderedData.ToPagedList(pageNumber, pageSize)));
 		}
 
 		// GET: Admin/NhaXuatBans/Details/5

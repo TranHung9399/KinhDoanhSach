@@ -177,59 +177,56 @@ namespace bansach.Areas.Admin.Controllers
 		[CheckPermission(Permission = "SACH_VIEW")]
 		// GET: Admin/Saches
 		public async Task<ActionResult> Index(int? page, string searchString, string searchType, string categoryFilter, string statusFilter)
-        {
-            if (Session["AdminUser"] == null)
-            {
-                return RedirectToAction("Index", "Login", new { area = "Admin" });
-            }
+		{
+			if (Session["AdminUser"] == null)
+			{
+				return RedirectToAction("Index", "Login", new { area = "Admin" });
+			}
 
-            var user = Session["AdminUser"] as NhanVien;
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Login", new { area = "Admin" });
-            }
+			var user = Session["AdminUser"] as NhanVien;
+			if (user == null)
+			{
+				return RedirectToAction("Index", "Login", new { area = "Admin" });
+			}
 
-            ViewBag.HoTen = user.HoTen;
-            ViewBag.CurrentFilter = searchString;
-            ViewBag.CurrentSearchType = searchType ?? "name";
-            ViewBag.SearchString = searchString;
-            
-            // Add this line to populate categories
-            ViewBag.Categories = new SelectList(db.Loais, "MaLoai", "TenLoai");
+			ViewBag.HoTen = user.HoTen;
+			ViewBag.CurrentFilter = searchString;
+			ViewBag.CurrentSearchType = searchType ?? "name";
+			ViewBag.SearchString = searchString;
+			ViewBag.Categories = new SelectList(db.Loais, "MaLoai", "TenLoai");
 
-            var sach = db.Saches.Include(s => s.Loai).Include(s => s.NhaXuatBan);
+			var sachQuery = db.Saches.Include(s => s.Loai).Include(s => s.NhaXuatBan);
 
-            if (!String.IsNullOrEmpty(searchString))
-            {
-                if (searchType == "id")
-                {
-                    sach = sach.Where(s => s.MaSach.Contains(searchString));
-                }
-                else // mặc định tìm theo tên
-                {
-                    sach = sach.Where(s => s.TenSach.Contains(searchString));
-                }
-            }
+			if (!String.IsNullOrEmpty(searchString))
+			{
+				if (searchType == "id")
+				{
+					sachQuery = sachQuery.Where(s => s.MaSach.Contains(searchString));
+				}
+				else
+				{
+					sachQuery = sachQuery.Where(s => s.TenSach.Contains(searchString));
+				}
+			}
 
-            // Add category filter
-            if (!String.IsNullOrEmpty(categoryFilter))
-            {
-                sach = sach.Where(s => s.MaLoai == categoryFilter);
-            }
+			if (!String.IsNullOrEmpty(categoryFilter))
+			{
+				sachQuery = sachQuery.Where(s => s.MaLoai == categoryFilter);
+			}
 
-            // Add status filter
-            if (!String.IsNullOrEmpty(statusFilter))
-            {
-                int status = int.Parse(statusFilter);
-                sach = sach.Where(s => s.Status == status);
-            }
+			if (!String.IsNullOrEmpty(statusFilter))
+			{
+				int status = int.Parse(statusFilter);
+				sachQuery = sachQuery.Where(s => s.Status == status);
+			}
 
-            int pageSize = 5;
-            int pageNumber = (page ?? 1);
+			int pageSize = 5;
+			int pageNumber = (page ?? 1);
 
-            var danhSach = sach.OrderBy(s => s.MaSach).ToPagedList(pageNumber, pageSize);
-            return View(danhSach);
-        }
+			var sachList = await sachQuery.OrderBy(s => s.MaSach).ToListAsync();
+			var danhSach = sachList.ToPagedList(pageNumber, pageSize);
+			return View(danhSach);
+		}
 
 		[CheckPermission(Permission = "SACH_DETAIL")]
 		// GET: Admin/Saches/Details/5

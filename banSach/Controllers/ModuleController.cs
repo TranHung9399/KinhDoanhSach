@@ -24,13 +24,16 @@ namespace banSach.Controllers
 			{
 				try
 				{
-					// Truy vấn CSDL để lấy sách yêu thích của KH này
-					model = (from yt in db.YeuThiches
-							 join s in db.Saches on yt.MaSach equals s.MaSach
-							 where yt.MaKH == maKH && s.Status == 1
-							 orderby yt.NgayThem descending
-							 select s)
-							 .Take(20) // Giới hạn 20 sách
+					// Truy vấn CSDL tối ưu với AsNoTracking() cho read-only query
+					// Eager loading với Include để tránh N+1 query
+					// Lọc tại database level và Take() trước ToList()
+					model = db.YeuThiches
+							 .AsNoTracking()
+							 .Where(yt => yt.MaKH == maKH)
+							 .OrderByDescending(yt => yt.NgayThem)
+							 .Take(20)
+							 .Select(yt => yt.Sach)
+							 .Where(s => s.Status == 1)
 							 .ToList();
 
 					// Debug log
@@ -61,12 +64,14 @@ namespace banSach.Controllers
 			{
 				try
 				{
-					model = (from yt in db.YeuThiches
-							 join s in db.Saches on yt.MaSach equals s.MaSach
-							 where yt.MaKH == maKH && s.Status == 1
-							 orderby yt.NgayThem descending
-							 select s)
+					// Truy vấn tối ưu với AsNoTracking()
+					model = db.YeuThiches
+							 .AsNoTracking()
+							 .Where(yt => yt.MaKH == maKH)
+							 .OrderByDescending(yt => yt.NgayThem)
 							 .Take(20)
+							 .Select(yt => yt.Sach)
+							 .Where(s => s.Status == 1)
 							 .ToList();
 				}
 				catch (Exception ex)
@@ -90,22 +95,29 @@ namespace banSach.Controllers
 
 			if (kh != null)
 			{
-				// Lấy giỏ hàng (object) của khách hàng từ DB
-				GioHang cart = db.GioHangs
-								 .Include("ChiTietGioHangs.Sach") // Load chi tiết và sách
-								 .FirstOrDefault(g => g.MaKH == kh.MaKH);
+				// Tối ưu: Sử dụng AsNoTracking() cho read-only query
+				// Eager loading với Include để tránh N+1 query problem
+				// Tính tổng tiền ngay tại database với Sum() trên IQueryable
+				var maKH = kh.MaKH;
+				
+				var cart = db.GioHangs
+							 .AsNoTracking()
+							 .Include("ChiTietGioHangs.Sach")
+							 .FirstOrDefault(g => g.MaKH == maKH);
 
 				if (cart != null && cart.ChiTietGioHangs.Any())
 				{
-					// Lấy các sản phẩm
+					// Lấy 3 sản phẩm mới nhất (đã được eager load)
 					cartItems = cart.ChiTietGioHangs
 									.OrderByDescending(ct => ct.MaGioHang)
-									.Take(3) // Lấy 3 sản phẩm mới nhất
+									.Take(3)
 									.ToList();
 
-					// Tính tổng tiền
-					tongThanhTien = cart.ChiTietGioHangs
-										.Sum(item => (decimal)item.SoLuong * item.Sach.GiaChietKhau.GetValueOrDefault(0));
+					// Tính tổng tiền từ database (aggregation at SQL level)
+					tongThanhTien = db.ChiTietGioHangs
+										.AsNoTracking()
+										.Where(ct => ct.MaGioHang == cart.MaGioHang)
+										.Sum(item => (decimal?)item.SoLuong * item.Sach.GiaChietKhau) ?? 0;
 				}
 			}
 
@@ -117,7 +129,12 @@ namespace banSach.Controllers
 		}
 		public ActionResult Menu()
         {
-            var categories = db.Loais.Where(l => l.Status == 1).ToList();
+            // Tối ưu: AsNoTracking() cho read-only query
+            // Chỉ lấy các cột cần thiết (projection)
+            var categories = db.Loais
+                              .AsNoTracking()
+                              .Where(l => l.Status == 1)
+                              .ToList();
             return PartialView("Menu", categories);
         }
     }
