@@ -482,6 +482,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\chatbot.css" />
     <Content Include="Content\checkout.css" />
     <Content Include="Content\css.css" />
     <Content Include="Content\css\admin-search.css" />
@@ -493,6 +494,7 @@
     <Content Include="Content\flex-slider.min.css" />
     <Content Include="Content\font-awesome.css" />
     <Content Include="Content\jquery.fancybox.min.css" />
+    <Content Include="Content\layout-custom.css" />
     <Content Include="Content\magnific-popup.min.css" />
     <Content Include="Content\niceselect.css" />
     <Content Include="Content\owl-carousel.css" />
@@ -502,6 +504,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="Content\slicknav.min.css" />
     <Content Include="Content\themify-icons.css" />
+    <Content Include="Content\wishlist-sidebar.css" />
     <Content Include="css\book.css" />
     <Content Include="css\bookprice.css" />
     <Content Include="css\checkout.css" />
@@ -681,6 +684,7 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\layout-main.js" />
     <Content Include="Scripts\magnific-popup.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\nicesellect.js" />
