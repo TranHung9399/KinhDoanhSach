@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using banSach.Models;
@@ -20,7 +21,7 @@ namespace banSach.Areas.Admin.Controllers
 
 		// GET: Admin/TacGias
 		[CheckPermission(Permission = "TG_VIEW")]
-		public ActionResult Index(int? page, string searchString, string searchType)
+		public async Task<ActionResult> Index(int? page, string searchString, string searchType)
 		{
 			if (Session["AdminUser"] == null)
 			{
@@ -35,7 +36,11 @@ namespace banSach.Areas.Admin.Controllers
 
 			ViewBag.HoTen = user.HoTen;
 
-			var tacGias = db.TacGias.Include(t => t.VietSaches).AsQueryable();
+			// Tối ưu: AsNoTracking() cho read-only query
+			var tacGias = db.TacGias
+						 .AsNoTracking()
+						 .Include(t => t.VietSaches)
+						 .AsQueryable();
 			ViewBag.CurrentFilter = searchString;
 			ViewBag.CurrentSearchType = searchType ?? "name";
 
@@ -53,12 +58,13 @@ namespace banSach.Areas.Admin.Controllers
 
 			int pageSize = 10;
 			int pageNumber = (page ?? 1);
-			return View(tacGias.OrderBy(t => t.MaTG).ToPagedList(pageNumber, pageSize));
+			var orderedData = tacGias.OrderBy(t => t.MaTG);
+			return View(await Task.Run(() => orderedData.ToPagedList(pageNumber, pageSize)));
 		}
 
 		// GET: Admin/TacGias/Details/5
 		[CheckPermission(Permission = "TG_DETAIL")]
-		public ActionResult Details(string id)
+		public async Task<ActionResult> Details(string id)
 		{
 			if (Session["AdminUser"] == null)
 			{
@@ -77,14 +83,18 @@ namespace banSach.Areas.Admin.Controllers
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 			}
 
-			var tacGia = db.TacGias.Find(id);
+			var tacGia = await db.TacGias.FindAsync(id);
 			if (tacGia == null)
 			{
 				return HttpNotFound();
 			}
 
-			var dsSach = db.Saches.ToList();
-			var dsViet = db.VietSaches.Where(v => v.MaTG == id).ToList();
+			// Tối ưu: AsNoTracking() cho read-only queries
+			var dsSach = await db.Saches.AsNoTracking().ToListAsync();
+			var dsViet = await db.VietSaches
+							 .AsNoTracking()
+							 .Where(v => v.MaTG == id)
+							 .ToListAsync();
 
 			var viewModel = new TacGiaModel
 			{
@@ -107,7 +117,7 @@ namespace banSach.Areas.Admin.Controllers
 
 		// GET: Admin/TacGias/Create
 		[CheckPermission(Permission = "TG_CREATE")]
-		public ActionResult Create()
+		public async Task<ActionResult> Create()
 		{
 			if (Session["AdminUser"] == null)
 			{
@@ -121,7 +131,8 @@ namespace banSach.Areas.Admin.Controllers
 			}
 
 			ViewBag.HoTen = user.HoTen;
-			var allSachs = db.Saches.ToList();
+			// Tối ưu: AsNoTracking() cho read-only query
+			var allSachs = await db.Saches.AsNoTracking().ToListAsync();
 
 			var model = new TacGiaModel
 			{

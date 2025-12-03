@@ -31,16 +31,18 @@ namespace banSach.Controllers
             }
 
             // ✅ Pagination settings
-            int pageSize = 5; // 5 đơn hàng mỗi trang
-            int pageNumber = (page ?? 1);
+			int pageSize = 5; // 5 đơn hàng mỗi trang
+			int pageNumber = (page ?? 1);
 
-            // ✅ CẬP NHẬT: Query đơn hàng theo MaKH với phân trang
-            var donHangs = db.DonDatHangs
-                            .Include(dh => dh.ChiTietDonHangs.Select(ct => ct.Sach))
-                            .Include(dh => dh.ThanhToans)  // ✅ THÊM: Include ThanhToans
-                            .Where(dh => dh.MaKH == maKH)  // ✅ Query theo Foreign Key MaKH
-                            .OrderByDescending(dh => dh.NgayDat)
-                            .ToPagedList(pageNumber, pageSize); // ✅ Áp dụng phân trang
+			// ✅ CẬP NHẬT: Query đơn hàng theo MaKH với phân trang
+			// Tối ưu: AsNoTracking() cho read-only query, eager loading để tránh N+1
+			var donHangs = db.DonDatHangs
+							.AsNoTracking()
+							.Include(dh => dh.ChiTietDonHangs.Select(ct => ct.Sach))
+							.Include(dh => dh.ThanhToans)  // ✅ THÊM: Include ThanhToans
+							.Where(dh => dh.MaKH == maKH)  // ✅ Query theo Foreign Key MaKH
+							.OrderByDescending(dh => dh.NgayDat)
+							.ToPagedList(pageNumber, pageSize); // ✅ Áp dụng phân trang
 
             // ✅ CẬP NHẬT: Sử dụng TongTien từ database (nếu có)
             var tongTienDict = new Dictionary<string, decimal>();
@@ -92,15 +94,15 @@ namespace banSach.Controllers
                     return RedirectToAction("Index", "Dangnhap");
                 }
 
-                // Kiểm tra trùng số điện thoại
-                if (!string.IsNullOrEmpty(model.SoDienThoai) && db.KhachHangs.Any(kh => kh.SoDienThoai == model.SoDienThoai && kh.MaKH != maKH))
-                {
-                    TempData["ErrorMessage"] = "Số điện thoại đã được sử dụng!";
-                    return View("Index", model);
-                }
-                // Kiểm tra trùng email
-                if (!string.IsNullOrEmpty(model.Email) && db.KhachHangs.Any(kh => kh.Email == model.Email && kh.MaKH != maKH))
-                {
+				// Kiểm tra trùng số điện thoại với AsNoTracking() cho read-only query
+				if (!string.IsNullOrEmpty(model.SoDienThoai) && db.KhachHangs.AsNoTracking().Any(kh => kh.SoDienThoai == model.SoDienThoai && kh.MaKH != maKH))
+				{
+					TempData["ErrorMessage"] = "Số điện thoại đã được sử dụng!";
+					return View("Index", model);
+				}
+				// Kiểm tra trùng email với AsNoTracking()
+				if (!string.IsNullOrEmpty(model.Email) && db.KhachHangs.AsNoTracking().Any(kh => kh.Email == model.Email && kh.MaKH != maKH))
+				{
                     TempData["ErrorMessage"] = "Email đã được sử dụng!";
                     return View("Index", model);
                 }

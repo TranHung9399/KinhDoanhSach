@@ -18,6 +18,7 @@ namespace banSach.Controllers
 		}
 
 		[HttpPost]
+		[ValidateInput(false)]
 		public async Task<JsonResult> SendMessage(string userMessage, string historyJson)
 		{
 			try

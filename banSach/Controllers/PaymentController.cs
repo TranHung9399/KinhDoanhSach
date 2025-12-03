@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Web.Mvc;
 using banSach.Models;
+using System.Threading.Tasks;
+using System.Data.Entity;
 
 namespace banSach.Controllers
 {
@@ -16,7 +18,7 @@ namespace banSach.Controllers
         /// <summary>
         /// Hủy đơn hàng (chỉ được hủy khi đơn chưa xác nhận)
         /// </summary>
-        public ActionResult Cancel(string maDonHang)
+        public async Task<ActionResult> Cancel(string maDonHang)
         {
             if (Session["KhachHang"] == null)
             {
@@ -27,7 +29,7 @@ namespace banSach.Controllers
             try
             {
                 var maKH = Session["MaKH"]?.ToString();
-                var donHang = db.DonDatHangs.FirstOrDefault(d => d.MaDonHang == maDonHang && d.MaKH == maKH);
+                var donHang = await db.DonDatHangs.FirstOrDefaultAsync(d => d.MaDonHang == maDonHang && d.MaKH == maKH);
                 
                 if (donHang == null)
                 {
@@ -46,24 +48,26 @@ namespace banSach.Controllers
                 donHang.TrangThai = "Đã hủy";
 
                 // Cập nhật trạng thái thanh toán
-                var thanhToan = db.ThanhToans.FirstOrDefault(t => t.MaDonHang == maDonHang);
+                var thanhToan = await db.ThanhToans.FirstOrDefaultAsync(t => t.MaDonHang == maDonHang);
                 if (thanhToan != null)
                 {
                     thanhToan.TrangThaiThanhToan = "Đã hủy";
                 }
 
                 // Hoàn lại số lượng sách
-                var chiTietDonHangs = db.ChiTietDonHangs.Where(ct => ct.MaDonHang == maDonHang).ToList();
+                var chiTietDonHangs = await db.ChiTietDonHangs
+                    .Where(ct => ct.MaDonHang == maDonHang)
+                    .ToListAsync();
                 foreach (var chiTiet in chiTietDonHangs)
                 {
-                    var sach = db.Saches.Find(chiTiet.MaSach);
+                    var sach = await db.Saches.FindAsync(chiTiet.MaSach);
                     if (sach != null)
                     {
                         sach.SoLuongTon += chiTiet.SoLuong ?? 0;
                     }
                 }
 
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Đã hủy đơn hàng thành công.";
             }
             catch (Exception ex)
@@ -77,7 +81,7 @@ namespace banSach.Controllers
         /// <summary>
         /// Xem chi tiết thanh toán
         /// </summary>
-        public ActionResult Details(string maDonHang)
+        public async Task<ActionResult> Details(string maDonHang)
         {
             if (Session["KhachHang"] == null)
             {
@@ -86,9 +90,11 @@ namespace banSach.Controllers
             }
 
             var maKH = Session["MaKH"]?.ToString();
-            var thanhToan = db.ThanhToans
+            // Tối ưu: AsNoTracking() cho read-only query
+            var thanhToan = await db.ThanhToans
+                .AsNoTracking()
                 .Where(t => t.MaDonHang == maDonHang && t.DonDatHang.MaKH == maKH)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (thanhToan == null)
             {

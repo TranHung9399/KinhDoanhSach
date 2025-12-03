@@ -158,8 +158,8 @@ namespace banSach.Controllers
                 return HttpNotFound();
             }
 
-            // Fetch authors and their roles via VietSach
-            var authors = await (from vs in db.VietSaches
+            // Fetch authors and their roles via VietSach with AsNoTracking() for read-only query
+            var authors = await (from vs in db.VietSaches.AsNoTracking()
                            join tg in db.TacGias on vs.MaTG equals tg.MaTG
                            where vs.MaSach == id && tg.Status == 1
                            select new SachChonViewModel
@@ -180,9 +180,10 @@ namespace banSach.Controllers
 
             ViewBag.Authors = authors;
 
-            // Giả sử Model là 1 quyển sách
+            // Lấy sách liên quan với AsNoTracking() và chỉ lấy các cột cần thiết
             var relatedBooks = await db.Saches
-                .Where(s => s.MaSach != book.MaSach)
+                .AsNoTracking()
+                .Where(s => s.MaSach != book.MaSach && s.Status == 1)
                 .OrderByDescending(s => s.NgayNhapHang)
                 .Take(10)
                 .ToListAsync();

@@ -23,8 +23,11 @@ namespace banSach.Controllers
 
 			if (!string.IsNullOrEmpty(maKH))
 			{
-				// Đã đăng nhập: lấy giỏ hàng từ DB
-				gioHang = await db.GioHangs.Include("ChiTietGioHangs.Sach").FirstOrDefaultAsync(g => g.MaKH == maKH);
+				// Đã đăng nhập: lấy giỏ hàng từ DB với AsNoTracking() cho read-only
+				gioHang = await db.GioHangs
+								.AsNoTracking()
+								.Include("ChiTietGioHangs.Sach")
+								.FirstOrDefaultAsync(g => g.MaKH == maKH);
 				if (gioHang == null)
 				{
 					gioHang = new GioHang
@@ -180,9 +183,11 @@ namespace banSach.Controllers
 				await db.SaveChangesAsync();
 
 				decimal newSubtotal = (soLuong <= 0) ? 0 : soLuong * (chiTiet.DonGia ?? 0);
+				// Tối ưu: Tính tổng tiền tại SQL level với AsNoTracking()
 				decimal newTotal = await db.ChiTietGioHangs
+					.AsNoTracking()
 					.Where(ct => ct.MaGioHang == maGioHang)
-					.SumAsync(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0));
+					.SumAsync(ct => (decimal?)(ct.SoLuong ?? 0) * (ct.DonGia ?? 0)) ?? 0;
 
 				return Json(new
 				{
@@ -249,17 +254,13 @@ namespace banSach.Controllers
 			var maKH = Session["MaKH"]?.ToString();
 			if (!string.IsNullOrEmpty(maKH))
 			{
-				var gioHang = db.GioHangs.Include("ChiTietGioHangs")
-										 .FirstOrDefault(g => g.MaKH == maKH);
-
-				if (gioHang != null && gioHang.ChiTietGioHangs != null)
-				{
-					ViewBag.Tongsoluong = gioHang.ChiTietGioHangs.Sum(ct => ct.SoLuong ?? 0);
-				}
-				else
-				{
-					ViewBag.Tongsoluong = 0;
-				}
+				// Tối ưu: Tính tổng số lượng tại SQL level với AsNoTracking()
+				var tongSoLuong = db.ChiTietGioHangs
+									.AsNoTracking()
+									.Where(ct => ct.GioHang.MaKH == maKH)
+									.Sum(ct => (int?)ct.SoLuong) ?? 0;
+				
+				ViewBag.Tongsoluong = tongSoLuong;
 			}
 			else
 			{
@@ -296,7 +297,9 @@ namespace banSach.Controllers
 			{
 				var today = DateTime.Now;
 
+				// Tối ưu: AsNoTracking() cho read-only query
 				var discountsFromDb = db.MaGiamGias
+					.AsNoTracking()
 					.Where(m =>
 						(m.TrangThai ?? true) &&
 						(!m.NgayBatDau.HasValue || DbFunctions.TruncateTime(m.NgayBatDau) <= today) &&
@@ -347,7 +350,10 @@ namespace banSach.Controllers
 				}
 
 				var normalizedCode = code.Trim();
-				var discount = db.MaGiamGias.FirstOrDefault(m => m.MaCode == normalizedCode);
+				// Tối ưu: AsNoTracking() cho read-only query
+				var discount = db.MaGiamGias
+								.AsNoTracking()
+								.FirstOrDefault(m => m.MaCode == normalizedCode);
 
 				if (discount == null)
 				{

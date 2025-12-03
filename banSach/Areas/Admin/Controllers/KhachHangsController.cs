@@ -25,7 +25,8 @@ namespace banSach.Areas.Admin.Controllers
 		[CheckPermission(Permission = "KH_VIEW")]
 		public ActionResult Index(string search, int? page)
         {
-            var khachHangs = db.KhachHangs.AsQueryable();
+            // Tối ưu: AsNoTracking() cho read-only query
+            var khachHangs = db.KhachHangs.AsNoTracking().AsQueryable();
             if (!string.IsNullOrEmpty(search))
             {
                 khachHangs = khachHangs.Where(k => k.HoTen.Contains(search) || k.Email.Contains(search) || k.DiaChi.Contains(search) || k.SoDienThoai.Contains(search));

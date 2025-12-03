@@ -67,7 +67,7 @@ namespace banSach.Controllers
         public ActionResult TimKiem(string skey)
         {
             // Truyền danh sách loại sách vào ViewBag để hiển thị danh mục (nếu cần)
-            ViewBag.LoaiList = db.Loais.ToList();
+            ViewBag.LoaiList = db.Loais.AsNoTracking().ToList();
             ViewBag.SearchKey = skey; // Lưu từ khóa tìm kiếm để hiển thị lại
 
             // Nếu skey rỗng hoặc null, trả về danh sách rỗng hoặc thông báo
@@ -76,8 +76,9 @@ namespace banSach.Controllers
                 return View(new List<banSach.Models.Sach>()); // Trả về view TimKiem với danh sách rỗng
             }
 
-            // Tìm kiếm sách theo tên hoặc mô tả
+            // Tìm kiếm sách theo tên hoặc mô tả với AsNoTracking() cho read-only query
             var searchResults = db.Saches
+                .AsNoTracking()
                 .Where(s => s.TenSach.Contains(skey) || (s.MoTa != null && s.MoTa.Contains(skey)))
                 .ToList();
 

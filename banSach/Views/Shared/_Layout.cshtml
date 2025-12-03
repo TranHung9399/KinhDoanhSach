@@ -996,6 +996,19 @@ function removeFavoriteItem(maSach, btnElement) {
         var chatBox = document.getElementById("chat-box");
         chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+        // Khi lưu vào history, loại bỏ HTML tags
+        function addToHistory(role, content) {
+            // Strip HTML tags trước khi lưu vào history
+            var tempDiv = document.createElement("div");
+            tempDiv.innerHTML = content;
+            var textOnly = tempDiv.textContent || tempDiv.innerText || "";
+
+            chatHistory.push({
+                Role: role,
+                Content: textOnly // Chỉ lưu text, không lưu HTML
+            });
+        }
     </script>
     @Scripts.Render("~/bundles/jquery") @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)

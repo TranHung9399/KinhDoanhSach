@@ -28,7 +28,11 @@ namespace banSach.Areas.Admin.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            DonDatHang donDatHang = await db.DonDatHangs.Include(d => d.ChiTietDonHangs.Select(c => c.Sach)).FirstOrDefaultAsync(d => d.MaDonHang == id);
+            // Tối ưu: AsNoTracking() cho read-only query, eager loading để tránh N+1
+            DonDatHang donDatHang = await db.DonDatHangs
+                .AsNoTracking()
+                .Include(d => d.ChiTietDonHangs.Select(c => c.Sach))
+                .FirstOrDefaultAsync(d => d.MaDonHang == id);
             if (donDatHang == null)
             {
                 return HttpNotFound();
@@ -150,7 +154,11 @@ namespace banSach.Areas.Admin.Controllers
             ViewBag.CurrentSearchType = searchType ?? "name";
             ViewBag.StatusFilter = statusFilter;
 
-            var donDatHangs = db.DonDatHangs.Include(d => d.ChiTietDonHangs).AsQueryable();
+            // Tối ưu: AsNoTracking() cho read-only query và eager loading
+            var donDatHangs = db.DonDatHangs
+                .AsNoTracking()
+                .Include(d => d.ChiTietDonHangs)
+                .AsQueryable();
             
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -186,7 +194,9 @@ namespace banSach.Areas.Admin.Controllers
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 			}
 
+			// Tối ưu: AsNoTracking() cho read-only query và eager loading
 			var donDatHang = await db.DonDatHangs
+				.AsNoTracking()
 				.Include(d => d.ChiTietDonHangs.Select(ct => ct.Sach))
 				.Include(d => d.KhachHang)  // ✅ THÊM: Include KhachHang
 				.Include(d => d.ThanhToans)  // ✅ THÊM: Include ThanhToan
