@@ -132,13 +132,11 @@
                                 </a>
                                 @Html.Action("_CartPartial", "Module")
                                 <div class="total-count-container">
-                                    <span style="font-weight: bold; font-size: 16px; margin-left: 15px; color: #222;">Giỏ hàng</span> <br>
-                                    <span class="total-count" style="font-size: 11px; color: #222;margin-left:13px; font-weight: 400;margin-l margin-top: 1px;">
-                                        @ViewBag.Tongsoluong
-                                    </span>
-                                    <span style="font-size: 11px; color: #222; font-weight: 400;">
-                                        sản phẩm
-                                    </span>
+                                    <div style="font-weight: bold; font-size: 16px; margin-left: 15px; color: #222;">Giỏ hàng</div>
+                                    <div style="font-size: 11px; color: #222; margin-left: 15px; font-weight: 400; display: flex; gap: 4px; align-items: center;">
+                                        <span>@ViewBag.Tongsoluong</span>
+                                        <span>sản phẩm</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -242,6 +240,16 @@
             </div>
             <div class="like-offcanvas-body">
                 @Html.Action("_WishlistPartial", "Module")
+            </div>
+        </div>
+
+        <!-- Nút Gợi ý sách -->
+        <div class="suggest-float-btn">
+            <div class="icon-part">
+                <i class="bx bx-book-open"></i>
+            </div>
+            <div class="text-part">
+                <span>Gợi ý sách</span>
             </div>
         </div>
     }

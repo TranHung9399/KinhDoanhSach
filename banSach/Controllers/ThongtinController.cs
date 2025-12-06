@@ -66,8 +66,21 @@ namespace banSach.Controllers
                 tongTienDict[dh.MaDonHang] = tongTien;
             }
 
+            // ✅ THÊM: Tính số lượng đơn hàng theo trạng thái
+            var allOrders = db.DonDatHangs.AsNoTracking().Where(dh => dh.MaKH == maKH);
+            var countDict = new Dictionary<string, int>
+            {
+                { "Chờ xác nhận", allOrders.Count(dh => dh.TrangThai == "Chờ xác nhận") },
+                { "Đã xác nhận", allOrders.Count(dh => dh.TrangThai == "Đã xác nhận") },
+                { "Đang giao hàng", allOrders.Count(dh => dh.TrangThai == "Đang giao hàng") },
+                { "Hoàn tất", allOrders.Count(dh => dh.TrangThai == "Hoàn tất") },
+                { "Đã hủy", allOrders.Count(dh => dh.TrangThai == "Đã hủy") }
+            };
+
             ViewBag.DonHangs = donHangs;
             ViewBag.TongTienDict = tongTienDict;
+            ViewBag.CountDict = countDict;
+            ViewBag.CurrentStatus = "";
 
             return View(khachHang);
         }
@@ -226,6 +239,72 @@ namespace banSach.Controllers
                 TempData["ErrorMessage"] = "Không thể hủy đơn hàng.";
             }
             return RedirectToAction("Index");
+        }
+
+        // GET: Thongtin/FilterOrders - AJAX Method
+        public ActionResult FilterOrders(string status, int? page)
+        {
+            if (Session["KhachHang"] == null)
+            {
+                return Content("<div class='alert alert-warning'>Vui lòng đăng nhập!</div>");
+            }
+
+            var maKH = Session["MaKH"]?.ToString();
+            
+            // Pagination settings
+            int pageSize = 5;
+            int pageNumber = (page ?? 1);
+
+            // Query đơn hàng theo MaKH và status (nếu có)
+            var query = db.DonDatHangs
+                .AsNoTracking()
+                .Include(dh => dh.ChiTietDonHangs.Select(ct => ct.Sach))
+                .Include(dh => dh.ThanhToans)
+                .Where(dh => dh.MaKH == maKH);
+
+            // Filter by status if provided
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(dh => dh.TrangThai == status);
+            }
+
+            var donHangs = query.OrderByDescending(dh => dh.NgayDat)
+                               .ToPagedList(pageNumber, pageSize);
+
+            // Calculate TongTien
+            var tongTienDict = new Dictionary<string, decimal>();
+            foreach (var dh in donHangs)
+            {
+                decimal tongTien;
+                if (dh.TongTien.HasValue && dh.TongTien.Value > 0)
+                {
+                    tongTien = dh.TongTien.Value;
+                }
+                else
+                {
+                    var tienHang = dh.ChiTietDonHangs.Sum(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0));
+                    var phiShip = dh.PhiVanChuyen ?? 0;
+                    tongTien = tienHang + phiShip;
+                }
+                tongTienDict[dh.MaDonHang] = tongTien;
+            }
+
+            // Calculate counts for all statuses
+            var allOrders = db.DonDatHangs.AsNoTracking().Where(dh => dh.MaKH == maKH);
+            var countDict = new Dictionary<string, int>
+            {
+                { "Chờ xác nhận", allOrders.Count(dh => dh.TrangThai == "Chờ xác nhận") },
+                { "Đã xác nhận", allOrders.Count(dh => dh.TrangThai == "Đã xác nhận") },
+                { "Đang giao hàng", allOrders.Count(dh => dh.TrangThai == "Đang giao hàng") },
+                { "Hoàn tất", allOrders.Count(dh => dh.TrangThai == "Hoàn tất") },
+                { "Đã hủy", allOrders.Count(dh => dh.TrangThai == "Đã hủy") }
+            };
+
+            ViewBag.TongTienDict = tongTienDict;
+            ViewBag.CountDict = countDict;
+            ViewBag.CurrentStatus = status ?? "";
+
+            return PartialView("_OrdersList", donHangs);
         }
 
         // GET: Thongtin/ChiTietDonHang

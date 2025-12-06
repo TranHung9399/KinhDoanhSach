@@ -238,7 +238,22 @@ namespace banSach.Controllers
         // GET: Dangnhap/Logout
         public ActionResult Logout()
         {
-            Session.Clear(); // Xóa toàn bộ session
+            // Lưu thông tin tạm để log (optional)
+            var userName = Session["HoTen"]?.ToString();
+            
+            // Xóa toàn bộ session
+            Session.Clear();
+            Session.Abandon(); // Đảm bảo session được hủy hoàn toàn
+            
+            // Thông báo đăng xuất thành công
+            TempData["Success"] = "Đăng xuất thành công!";
+            
+            // Log (optional)
+            if (!string.IsNullOrEmpty(userName))
+            {
+                System.Diagnostics.Debug.WriteLine($"User {userName} logged out at {DateTime.Now}");
+            }
+            
             return RedirectToAction("Index", "Home");
         }
     }

@@ -734,6 +734,8 @@
     <Content Include="Views\Book\Index.cshtml" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="Views\Book\_SuggestBooksPartial.cshtml" />
+    <Content Include="Views\Thongtin\_OrdersList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Admin\Data\" />
