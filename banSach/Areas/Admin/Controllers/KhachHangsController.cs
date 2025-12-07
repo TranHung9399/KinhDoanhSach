@@ -115,5 +115,25 @@ namespace banSach.Areas.Admin.Controllers
             if (khachHang == null) return HttpNotFound();
             return View(khachHang);
         }
+
+		// POST: Admin/KhachHangs/ToggleStatus
+		[CheckPermission(Permission = "KH_EDIT")]
+		public ActionResult ToggleStatus(string id)
+		{
+			var khachHang = db.KhachHangs.Find(id);
+			if (khachHang != null)
+			{
+				// Toggle status: 1 = Active, 0 = Inactive
+				khachHang.TrangThai = khachHang.TrangThai == 1 ? 0 : 1;
+				db.Entry(khachHang).State = System.Data.Entity.EntityState.Modified;
+				db.SaveChanges();
+				TempData["Success"] = khachHang.TrangThai == 1 ? "Đã kích hoạt tài khoản khách hàng!" : "Đã vô hiệu hóa tài khoản khách hàng!";
+			}
+			else
+			{
+				TempData["Error"] = "Không tìm thấy khách hàng!";
+			}
+			return RedirectToAction("Index");
+		}
     }
 }

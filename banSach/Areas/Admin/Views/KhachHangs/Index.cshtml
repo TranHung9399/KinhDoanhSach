@@ -191,7 +191,7 @@
                                     }
                                 </td>
                                 <td data-label="Trạng thái">
-                                    @if (item.GioHangs.Any())
+                                    @if (item.TrangThai == 1)
                                     {
                                         <span class="badge badge-success">
                                             <i class="fas fa-check-circle"></i> Hoạt động
@@ -199,8 +199,8 @@
                                     }
                                     else
                                     {
-                                        <span class="badge badge-secondary">
-                                            <i class="fas fa-clock"></i> Chưa mua
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times-circle"></i> Vô hiệu hóa
                                         </span>
                                     }
                                 </td>
@@ -211,6 +211,13 @@
                                         </a>
                                         <a href="@Url.Action("Edit", new { id = item.MaKH })" class="btn btn-sm btn-outline-primary" title="Sửa">
                                             <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        <a href="@Url.Action("ToggleStatus", new { id = item.MaKH })"
+                                           class="btn btn-sm btn-outline-warning"
+                                           title="@(item.TrangThai == 1 ? "Vô hiệu hóa tài khoản" : "Kích hoạt tài khoản")"
+                                           onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái?')">
+                                            <i class="fas fa-@(item.TrangThai == 1 ? "ban" : "check")"></i>
                                         </a>
 
                                         <a href="@Url.Action("Delete", new { id = item.MaKH })"

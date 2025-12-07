@@ -39,6 +39,13 @@ namespace banSach.Controllers
 
             if (khachHang != null)
             {
+                // ✅ KIỂM TRA TRẠNG THÁI TÀI KHOẢN
+                if (khachHang.TrangThai == 0)
+                {
+                    TempData["Error"] = "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được hỗ trợ!";
+                    return View();
+                }
+                
                 Session["KhachHang"] = khachHang;
                 Session["MaKH"] = khachHang.MaKH;
                 Session["HoTen"] = khachHang.HoTen;
@@ -181,53 +188,125 @@ namespace banSach.Controllers
         }
 
         // Đăng nhập Google
-        public void GoogleLogin()
+        [AllowAnonymous]
+        public ActionResult GoogleLogin()
         {
-            HttpContext.GetOwinContext().Authentication.Challenge(
-                new AuthenticationProperties { RedirectUri = Url.Action("GoogleCallback", "Dangnhap") },
-                "Google");
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleCallback", "Dangnhap") };
+            HttpContext.GetOwinContext().Authentication.Challenge(properties, "Google");
+            return new HttpUnauthorizedResult();
         }
 
         // Callback từ Google
+        [AllowAnonymous]
         public async Task<ActionResult> GoogleCallback()
         {
             try
             {
-                var claimsIdentity = User.Identity as ClaimsIdentity;
-                if (claimsIdentity == null || !claimsIdentity.IsAuthenticated)
+                var loginInfo = await HttpContext.GetOwinContext().Authentication.AuthenticateAsync("ExternalCookie");
+                
+                if (loginInfo == null || loginInfo.Identity == null)
                 {
                     TempData["Error"] = "Đăng nhập Google thất bại!";
                     return RedirectToAction("Index");
                 }
-                var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
-                var name = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+
+                var email = loginInfo.Identity.FindFirst(ClaimTypes.Email)?.Value;
+                var name = loginInfo.Identity.FindFirst(ClaimTypes.Name)?.Value;
+                var picture = loginInfo.Identity.FindFirst("urn:google:picture")?.Value;
+
                 if (string.IsNullOrEmpty(email))
                 {
                     TempData["Error"] = "Không lấy được email từ Google!";
                     return RedirectToAction("Index");
                 }
+
+                // Tìm hoặc tạo mới khách hàng
                 var khachHang = await db.KhachHangs.FirstOrDefaultAsync(kh => kh.Email == email);
+                
                 if (khachHang == null)
                 {
+                    // Tạo mã khách hàng tự động
+                    var lastCustomer = await db.KhachHangs
+                        .OrderByDescending(kh => kh.MaKH)
+                        .FirstOrDefaultAsync();
+                    int newId = lastCustomer == null ? 1 : int.Parse(lastCustomer.MaKH.Replace("KH", "")) + 1;
+                    
                     khachHang = new KhachHang
                     {
-                        MaKH = Guid.NewGuid().ToString(),
-                        HoTen = name,
+                        MaKH = $"KH{newId:D3}",
+                        HoTen = name ?? "Google User",
                         Email = email,
-                        MatKhau = Guid.NewGuid().ToString()
+                        MatKhau = Guid.NewGuid().ToString(), // Random password for Google accounts
+                        SoDienThoai = "", // Có thể yêu cầu user cập nhật sau
+                        DiaChi = "",
+                        TrangThai = 1 // ✅ Mặc định: Tài khoản mới = Active
                     };
+                    
                     db.KhachHangs.Add(khachHang);
                     await db.SaveChangesAsync();
                 }
+                else
+                {
+                    // ✅ KIỂM TRA TRẠNG THÁI TÀI KHOẢN GOOGLE
+                    if (khachHang.TrangThai == 0)
+                    {
+                        TempData["Error"] = "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được hỗ trợ!";
+                        HttpContext.GetOwinContext().Authentication.SignOut("ExternalCookie");
+                        return RedirectToAction("Index");
+                    }
+                }
+
+                // Merge cart nếu có
+                if (Session["Cart"] != null)
+                {
+                    var cart = (List<ChiTietGioHang>)Session["Cart"];
+                    string maKH = khachHang.MaKH;
+
+                    var gioHang = await db.GioHangs.FirstOrDefaultAsync(g => g.MaKH == maKH);
+                    if (gioHang == null)
+                    {
+                        gioHang = new GioHang { MaGioHang = Guid.NewGuid().ToString(), MaKH = maKH, NgayTao = DateTime.Now };
+                        db.GioHangs.Add(gioHang);
+                        await db.SaveChangesAsync();
+                    }
+
+                    foreach (var item in cart)
+                    {
+                        var chiTiet = await db.ChiTietGioHangs.FirstOrDefaultAsync(ct => ct.MaGioHang == gioHang.MaGioHang && ct.MaSach == item.MaSach);
+                        if (chiTiet == null)
+                        {
+                            db.ChiTietGioHangs.Add(new ChiTietGioHang
+                            {
+                                MaChiTiet = Guid.NewGuid().ToString(),
+                                MaGioHang = gioHang.MaGioHang,
+                                MaSach = item.MaSach,
+                                SoLuong = item.SoLuong,
+                                DonGia = item.DonGia
+                            });
+                        }
+                        else
+                        {
+                            chiTiet.SoLuong += item.SoLuong;
+                        }
+                    }
+                    await db.SaveChangesAsync();
+                    Session["Cart"] = null;
+                }
+
+                // Set session
                 Session["KhachHang"] = khachHang;
                 Session["MaKH"] = khachHang.MaKH;
                 Session["HoTen"] = khachHang.HoTen;
+                
+                // Sign out external cookie
+                HttpContext.GetOwinContext().Authentication.SignOut("ExternalCookie");
+                
                 TempData["Success"] = "Đăng nhập Google thành công!";
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = ex.ToString();
+                TempData["Error"] = "Có lỗi xảy ra: " + ex.Message;
                 return RedirectToAction("Index");
             }
         }

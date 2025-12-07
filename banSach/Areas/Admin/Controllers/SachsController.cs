@@ -45,7 +45,7 @@ namespace bansach.Areas.Admin.Controllers
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[CheckPermission(Permission = "SACH_CREATE")]
-		public async Task<JsonResult> CreateModal([Bind(Include = "TenSach,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai,Status")] Sach sach, HttpPostedFileBase HinhAnh)
+		public async Task<JsonResult> CreateModal([Bind(Include = "TenSach,GiaBan,GiaChietKhau,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai,Status")] Sach sach, HttpPostedFileBase HinhAnh)
 		{
 			try
 			{
@@ -73,7 +73,8 @@ namespace bansach.Areas.Admin.Controllers
 						sach.Hinh = fileName;
 					}
 
-					if (sach.GiaBan.HasValue)
+					// Chỉ tự động tính giá chiết khấu nếu người dùng không nhập
+					if (!sach.GiaChietKhau.HasValue && sach.GiaBan.HasValue)
 						sach.GiaChietKhau = Math.Round(sach.GiaBan.Value * 0.9m, 0);
 
 					db.Saches.Add(sach);
@@ -128,7 +129,7 @@ namespace bansach.Areas.Admin.Controllers
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[CheckPermission(Permission = "SACH_EDIT")]
-		public async Task<JsonResult> EditModal([Bind(Include = "MaSach,TenSach,Hinh,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai")] Sach sach, HttpPostedFileBase HinhAnh)
+		public async Task<JsonResult> EditModal([Bind(Include = "MaSach,TenSach,Hinh,GiaBan,GiaChietKhau,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai")] Sach sach, HttpPostedFileBase HinhAnh)
 		{
 			try
 			{
@@ -155,8 +156,8 @@ namespace bansach.Areas.Admin.Controllers
 					}
 
 					sach.Status = 1;
-					// Tính lại giá chiết khấu (giảm 10%)
-					if (sach.GiaBan.HasValue)
+					// Chỉ tự động tính giá chiết khấu nếu người dùng không nhập
+					if (!sach.GiaChietKhau.HasValue && sach.GiaBan.HasValue)
 						sach.GiaChietKhau = Math.Round(sach.GiaBan.Value * 0.9m, 0);
 
 					db.Entry(sach).State = EntityState.Modified;
@@ -283,7 +284,7 @@ namespace bansach.Areas.Admin.Controllers
 		// more details see https://go.microsoft.com/fwlink/?LinkId=317598.
 		[HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "TenSach,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai,Status")] Sach sach, HttpPostedFileBase HinhAnh)
+        public async Task<ActionResult> Create([Bind(Include = "TenSach,GiaBan,GiaChietKhau,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai,Status")] Sach sach, HttpPostedFileBase HinhAnh)
         {
             if (ModelState.IsValid)
             {
@@ -298,6 +299,7 @@ namespace bansach.Areas.Admin.Controllers
                     newMaSach = "S" + so.ToString("D3");
                 }
 
+
                 sach.MaSach = newMaSach;
 
                 // Xử lý upload hình nếu có
@@ -308,7 +310,8 @@ namespace bansach.Areas.Admin.Controllers
                     HinhAnh.SaveAs(path);
                     sach.Hinh = fileName;
                 }
-				if (sach.GiaBan.HasValue)
+				// Chỉ tự động tính giá chiết khấu nếu người dùng không nhập
+				if (!sach.GiaChietKhau.HasValue && sach.GiaBan.HasValue)
 					sach.GiaChietKhau = Math.Round(sach.GiaBan.Value * 0.9m, 0);
 
 				db.Saches.Add(sach);
@@ -358,7 +361,7 @@ namespace bansach.Areas.Admin.Controllers
 		// more details see https://go.microsoft.com/fwlink/?LinkId=317598.
 		[HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "MaSach,TenSach,Hinh,GiaBan,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai")] Sach sach, HttpPostedFileBase HinhAnh)
+        public async Task<ActionResult> Edit([Bind(Include = "MaSach,TenSach,Hinh,GiaBan,GiaChietKhau,MoTa,MaNXB,NgayNhapHang,SoLuongTon,MaLoai")] Sach sach, HttpPostedFileBase HinhAnh)
         {
             if (ModelState.IsValid)
             {
@@ -383,8 +386,8 @@ namespace bansach.Areas.Admin.Controllers
                 }
 
                 sach.Status = 1;
-				// Tính lại giá chiết khấu (giảm 10%)
-				if (sach.GiaBan.HasValue)
+				// Chỉ tự động tính giá chiết khấu nếu người dùng không nhập
+				if (!sach.GiaChietKhau.HasValue && sach.GiaBan.HasValue)
 					sach.GiaChietKhau = Math.Round(sach.GiaBan.Value * 0.9m, 0);
 
 				db.Entry(sach).State = EntityState.Modified;

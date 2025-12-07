@@ -52,6 +52,70 @@
             </div>
         </div>
 
+        <!-- Thẻ Thống Kê Tổng Quan -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-primary text-white mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">Tổng Doanh Thu</h6>
+                                <h3 class="mb-0">@String.Format("{0:N0}₫", Model.TongDoanhThu)</h3>
+                            </div>
+                            <div>
+                                <i class="fas fa-money-bill-wave fa-2x text-white-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-success text-white mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">Tổng Đơn Hàng</h6>
+                                <h3 class="mb-0">@Model.TongSoDonHang</h3>
+                            </div>
+                            <div>
+                                <i class="fas fa-shopping-cart fa-2x text-white-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-warning text-white mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">Doanh Thu TB/Đơn</h6>
+                                <h3 class="mb-0">@String.Format("{0:N0}₫", Model.DoanhThuTrungBinh)</h3>
+                            </div>
+                            <div>
+                                <i class="fas fa-chart-line fa-2x text-white-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-info text-white mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1">Sản Phẩm Bán</h6>
+                                <h3 class="mb-0">@Model.TongSoSanPhamBan</h3>
+                            </div>
+                            <div>
+                                <i class="fas fa-book fa-2x text-white-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">Chi Tiết Doanh Thu</h4>
@@ -194,6 +258,163 @@
                 });
             </script>
         }
+
+        <!-- Top Sản Phẩm Bán Chạy -->
+        @if (Model.TopSanPhamBanChay != null && Model.TopSanPhamBanChay.Any())
+        {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="card-title">Top 10 Sản Phẩm Bán Chạy</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 80px;">Ảnh</th>
+                                        <th>Tên Sách</th>
+                                        <th style="width: 150px;">Số Lượng Bán</th>
+                                        <th style="width: 200px;">Doanh Thu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sp in Model.TopSanPhamBanChay)
+                                    {
+                                        <tr>
+                                            <td class="text-center">
+                                                @if (!string.IsNullOrEmpty(sp.AnhBia))
+                                                {
+                                                    <img src="@Url.Content(sp.AnhBia)" alt="@sp.TenSach" style="width: 50px; height: 70px; object-fit: cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div style="width: 50px; height: 70px; background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-book"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>@sp.TenSach</td>
+                                            <td class="text-center"><strong>@sp.SoLuongBan</strong></td>
+                                            <td class="text-end">@String.Format("{0:N0}₫", sp.DoanhThu)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <!-- Thống Kê Theo Loại -->
+        @if (Model.ThongKeTheoLoai != null && Model.ThongKeTheoLoai.Any())
+        {
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h4 class="card-title">Thống Kê Theo Danh Mục</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Danh Mục</th>
+                                                <th style="width: 120px;">SL Bán</th>
+                                                <th style="width: 180px;">Doanh Thu</th>
+                                                <th style="width: 100px;">Tỷ Lệ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var loai in Model.ThongKeTheoLoai)
+                                            {
+                                                <tr>
+                                                    <td>@loai.TenLoai</td>
+                                                    <td class="text-center">@loai.SoLuongBan</td>
+                                                    <td class="text-end">@String.Format("{0:N0}₫", loai.DoanhThu)</td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-primary">@loai.TyLe%</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h4 class="card-title">Biểu Đồ Phân Bố Doanh Thu</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="categoryChart" style="max-height: 400px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        if (typeof Chart === 'undefined') {
+                            console.error('Chart.js không được tải.');
+                            return;
+                        }
+
+                        const categoryLabels = @Html.Raw(Json.Encode(Model.ThongKeTheoLoai.Select(l => l.TenLoai).ToArray()));
+                        const categoryData = @Html.Raw(Json.Encode(Model.ThongKeTheoLoai.Select(l => l.DoanhThu).ToArray()));
+
+                        const colors = [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)',
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(199, 199, 199, 0.8)',
+                            'rgba(83, 102, 255, 0.8)',
+                            'rgba(255, 99, 255, 0.8)',
+                            'rgba(99, 255, 132, 0.8)'
+                        ];
+
+                        const ctx2 = document.getElementById('categoryChart').getContext('2d');
+                        new Chart(ctx2, {
+                            type: 'doughnut',
+                            data: {
+                                labels: categoryLabels,
+                                datasets: [{
+                                    data: categoryData,
+                                    backgroundColor: colors,
+                                    borderWidth: 2,
+                                    borderColor: '#fff'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'bottom'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.label || '';
+                                                const value = context.parsed || 0;
+                                                return label + ': ' + value.toLocaleString('vi-VN') + '₫';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                </script>
+            }
+        }
     </div>
 </main>
 
@@ -204,19 +425,27 @@
 <style>
     .card {
         border: 1px solid #ddd;
-        border-radius: 5px;
+        border-radius: 8px;
         margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
 
     .card-header {
         background-color: #f8f9fa;
         padding: 15px;
         border-bottom: 1px solid #ddd;
+        border-radius: 8px 8px 0 0;
     }
 
     .card-title {
         margin: 0;
         font-size: 1.25rem;
+        font-weight: 600;
     }
 
     .card-body {
@@ -230,6 +459,39 @@
 
     .table th {
         background-color: #e9ecef;
+        font-weight: 600;
+    }
+
+    /* Thẻ thống kê tổng quan */
+    .bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%) !important;
+    }
+
+    .bg-warning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    }
+
+    .bg-info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    }
+
+    .shadow-sm {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    }
+
+    .text-white-50 {
+        opacity: 0.9;
+    }
+
+    /* Responsive cho các thẻ thống kê */
+    @@media (max-width: 768px) {
+        .card-body h3 {
+            font-size: 1.5rem;
+        }
     }
 </style>
 

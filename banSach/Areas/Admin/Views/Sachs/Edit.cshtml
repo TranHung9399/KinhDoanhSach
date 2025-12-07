@@ -72,13 +72,24 @@
                                 </div>
                                 <div class="col-md-6 mb-4 d-flex align-items-center">
                                     <div class="form-outline datepicker w-100">
+                                        <label class="form-label fw-bold">Giá Chiết Khấu</label>
+                                        @Html.EditorFor(model => model.GiaChietKhau, new { htmlAttributes = new { @class = "form-control form-control-lg" } })
+                                        @Html.ValidationMessageFor(model => model.GiaChietKhau, "", new { @class = "text-danger" })
+                                        <small class="text-muted">Để trống để tự động giảm 10%</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4 d-flex align-items-center">
+                                    <div class="form-outline datepicker w-100">
                                         <label class="form-label fw-bold">Ngày Nhập</label>
                                         @Html.TextBoxFor(model => model.NgayNhapHang, new { @class = "form-control", @type = "date" })
                                         @Html.ValidationMessageFor(model => model.NgayNhapHang, "", new { @class = "text-danger mt-1" })
                                     </div>
                                 </div>
-
-
+                                <div class="col-md-6 mb-4 d-flex align-items-center">
+                                </div>
                             </div>
 
                             <div class="row">

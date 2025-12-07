@@ -19,9 +19,12 @@ namespace banSach.Controllers
 
             // REMOVED: var sachList = db.Saches.ToList(); - This was loading the entire table!
 
-            // Sách mới: 8 cuốn mới nhất - Optimized with AsNoTracking
+            // Sách mới: 8 cuốn mới nhất - Chỉ lấy sách có NgayNhapHang trong vòng 30 ngày
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
             ViewBag.NewBooks = await db.Saches.AsNoTracking()
-                .Where(s => s.Status == 1)
+                .Where(s => s.Status == 1 
+                    && s.NgayNhapHang.HasValue 
+                    && s.NgayNhapHang.Value >= thirtyDaysAgo)
                 .OrderByDescending(s => s.NgayNhapHang)
                 .Take(8)
                 .ToListAsync();

@@ -66,6 +66,24 @@ namespace banSach.Areas.Admin.Controllers
                 }
             }
 
+            // ✅ THÊM: Cập nhật SoLuongBan khi đơn hàng hoàn tất
+            if (trangThai == "Hoàn tất" || trangThai == "Đã giao")
+            {
+                var chiTietDonHangs = await db.ChiTietDonHangs
+                    .Where(ct => ct.MaDonHang == maDonHang)
+                    .ToListAsync();
+
+                foreach (var item in chiTietDonHangs)
+                {
+                    var sach = await db.Saches.FindAsync(item.MaSach);
+                    if (sach != null)
+                    {
+                        // Cập nhật số lượng bán
+                        sach.SoLuongBan = (sach.SoLuongBan ?? 0) + (item.SoLuong ?? 0);
+                    }
+                }
+            }
+
             await db.SaveChangesAsync();
             TempData["SuccessMessage"] = "Cập nhật trạng thái thành công!";
 
@@ -219,6 +237,7 @@ namespace banSach.Areas.Admin.Controllers
 			return View(donDatHang);
 		}
 
+		[CheckPermission(Permission = "DH_CREATE")]
 		// GET: Admin/DonDatHangs/Create
 		public async Task<ActionResult> Create()
         {
@@ -263,7 +282,8 @@ namespace banSach.Areas.Admin.Controllers
         // POST: Admin/DonDatHangs/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(DonDatHang model)
+		[CheckPermission(Permission = "DH_CREATE")]
+		public async Task<ActionResult> Create(DonDatHang model)
         {
             if (model.ChiTietDonHangs == null || !model.ChiTietDonHangs.Any())
             {

@@ -51,6 +51,54 @@ namespace banSach.Areas.Admin.Controllers
             // Calculate totals in DB
             var tongSoDonHang = await query.CountAsync();
             var tongDoanhThu = await query.SelectMany(d => d.ChiTietDonHangs).SumAsync(c => (decimal?)((c.SoLuong ?? 0) * (c.DonGia ?? 0))) ?? 0;
+            var tongSoSanPhamBan = await query.SelectMany(d => d.ChiTietDonHangs).SumAsync(c => (int?)(c.SoLuong ?? 0)) ?? 0;
+            var tongKhachHang = await query.Select(d => d.MaKH).Distinct().CountAsync();
+            var doanhThuTrungBinh = tongSoDonHang > 0 ? tongDoanhThu / tongSoDonHang : 0;
+
+            // Top sản phẩm bán chạy
+            var topSanPham = await db.ChiTietDonHangs
+                .AsNoTracking()
+                .Where(ct => ct.DonDatHang.NgayDat >= batDau 
+                    && ct.DonDatHang.NgayDat <= ketThuc
+                    && (ct.DonDatHang.TrangThai == "Hoàn tất" || ct.DonDatHang.TrangThai == "Đã thanh toán"))
+                .GroupBy(ct => new { ct.MaSach, ct.Sach.TenSach, ct.Sach.Hinh })
+                .Select(g => new SanPhamBanChay
+                {
+                    TenSach = g.Key.TenSach,
+                    SoLuongBan = g.Sum(ct => ct.SoLuong ?? 0),
+                    DoanhThu = g.Sum(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0)),
+                    AnhBia = g.Key.Hinh
+                })
+                .OrderByDescending(s => s.SoLuongBan)
+                .Take(10)
+                .ToListAsync();
+
+            // Thống kê theo loại
+            var thongKeLoai = await db.ChiTietDonHangs
+                .AsNoTracking()
+                .Where(ct => ct.DonDatHang.NgayDat >= batDau 
+                    && ct.DonDatHang.NgayDat <= ketThuc
+                    && (ct.DonDatHang.TrangThai == "Hoàn tất" || ct.DonDatHang.TrangThai == "Đã thanh toán"))
+                .GroupBy(ct => ct.Sach.Loai.TenLoai)
+                .Select(g => new ThongKeTheoLoai
+                {
+                    TenLoai = g.Key,
+                    SoLuongBan = g.Sum(ct => ct.SoLuong ?? 0),
+                    DoanhThu = g.Sum(ct => (ct.SoLuong ?? 0) * (ct.DonGia ?? 0)),
+                    TyLe = 0
+                })
+                .OrderByDescending(l => l.DoanhThu)
+                .ToListAsync();
+
+            // Tính tỷ lệ phần trăm
+            var tongDoanhThuLoai = thongKeLoai.Sum(l => l.DoanhThu);
+            if (tongDoanhThuLoai > 0)
+            {
+                foreach (var loai in thongKeLoai)
+                {
+                    loai.TyLe = Math.Round((loai.DoanhThu / tongDoanhThuLoai) * 100, 2);
+                }
+            }
 
             // Tạo model thống kê
             var model = new ThongKe
@@ -60,6 +108,11 @@ namespace banSach.Areas.Admin.Controllers
                 LoaiThongKe = loaiThongKe,
                 TongSoDonHang = tongSoDonHang,
                 TongDoanhThu = tongDoanhThu,
+                DoanhThuTrungBinh = doanhThuTrungBinh,
+                TongSoSanPhamBan = tongSoSanPhamBan,
+                TongKhachHang = tongKhachHang,
+                TopSanPhamBanChay = topSanPham,
+                ThongKeTheoLoai = thongKeLoai,
                 ChiTiet = new List<ChiTietThongKe>()
             };
 

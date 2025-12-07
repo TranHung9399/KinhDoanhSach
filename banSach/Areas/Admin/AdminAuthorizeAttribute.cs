@@ -16,6 +16,18 @@ public class AdminAuthorizeAttribute : AuthorizeAttribute
 			return false; // Chưa đăng nhập
 		}
 
+		// ✅ KIỂM TRA TRẠNG THÁI TÀI KHOẢN NHÂN VIÊN
+		using (var db = new QLBanSachEntities())
+		{
+			var nhanVien = db.NhanViens.AsNoTracking().FirstOrDefault(nv => nv.MaNhanVien == user.MaNhanVien);
+			if (nhanVien != null && (nhanVien.TrangThai == false || nhanVien.TrangThai == null))
+			{
+				// Tài khoản bị vô hiệu hóa → Clear session
+				httpContext.Session.Clear();
+				return false;
+			}
+		}
+
 		if (string.IsNullOrEmpty(Roles))
 		{
 			return true; // Chỉ cần đăng nhập
@@ -45,6 +57,13 @@ public class AdminAuthorizeAttribute : AuthorizeAttribute
 		// Nếu chưa đăng nhập → Redirect Login
 		if (httpContext.Session["AdminUser"] == null)
 		{
+			// ✅ Kiểm tra xem có phải do tài khoản bị vô hiệu hóa không
+			if (httpContext.Session["AccountDisabled"] != null)
+			{
+				filterContext.Controller.TempData["ErrorMessage"] = "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản lý để được hỗ trợ!";
+				httpContext.Session.Remove("AccountDisabled");
+			}
+			
 			filterContext.Result = new RedirectToRouteResult(
 				new System.Web.Routing.RouteValueDictionary(
 					new { controller = "Login", action = "Index", area = "Admin" }

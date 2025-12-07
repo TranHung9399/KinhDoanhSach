@@ -848,12 +848,16 @@ namespace banSach.Controllers
 				int soLuong = Convert.ToInt32(item["SoLuong"]);
 				decimal donGia = Convert.ToDecimal(item["DonGia"]);
 
-				var sach = await db.Saches.FindAsync(maSach);
-				var thanhTien = soLuong * donGia;
-				tongTien += thanhTien;
+			var sach = await db.Saches.FindAsync(maSach);
+			var thanhTien = soLuong * donGia;
+			tongTien += thanhTien;
 
-				if (sach != null)
-					sach.SoLuongTon -= soLuong;
+			if (sach != null)
+			{
+				sach.SoLuongTon -= soLuong;
+				// ✅ Cập nhật số lượng bán
+				sach.SoLuongBan = (sach.SoLuongBan ?? 0) + soLuong;
+			}
 
 				db.ChiTietDonHangs.Add(new ChiTietDonHang
 				{
