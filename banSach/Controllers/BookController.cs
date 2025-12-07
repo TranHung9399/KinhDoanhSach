@@ -68,6 +68,10 @@ namespace banSach.Controllers
             {
                 if (type == "new")
                 {
+                    // Chỉ lấy sách có NgayNhapHang trong vòng 30 ngày
+                    var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+                    books = books.Where(s => s.NgayNhapHang.HasValue 
+                                        && s.NgayNhapHang.Value >= thirtyDaysAgo);
                     ViewBag.Category = new Loai { TenLoai = "Sách mới nhất" };
                 }
                 else if (type == "bestseller")

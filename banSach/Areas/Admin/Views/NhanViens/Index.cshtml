@@ -121,6 +121,7 @@
                             <th>Email</th>
                             <th>Tên tài khoản</th>
                             <th>Chức vụ</th>
+                            <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
@@ -160,6 +161,20 @@
                                         <span class="badge bg-secondary">Chưa xác định</span>
                                     }
                                 </td>
+                                <td data-label="Trạng thái">
+                                    @if (item.TrangThai == true)
+                                    {
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check-circle"></i> Hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times-circle"></i> Vô hiệu hóa
+                                        </span>
+                                    }
+                                </td>
                                 <td data-label="Thao tác">
                                     <div class="btn-group" role="group">
                                         <a href="@Url.Action("Details", new { id = item.MaNhanVien })" class="btn btn-sm btn-outline-info" title="Chi tiết">
@@ -168,6 +183,14 @@
                                         <a href="@Url.Action("Edit", new { id = item.MaNhanVien })" class="btn btn-sm btn-outline-primary" title="Sửa">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        
+                                        <a href="@Url.Action("ToggleStatus", new { id = item.MaNhanVien })"
+                                           class="btn btn-sm btn-outline-warning"
+                                           title="@(item.TrangThai == true ? "Vô hiệu hóa tài khoản" : "Kích hoạt tài khoản")"
+                                           onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái?')">
+                                            <i class="fas fa-@(item.TrangThai == true ? "ban" : "check")"></i>
+                                        </a>
+                                        
                                         <a href="@Url.Action("Delete", new { id = item.MaNhanVien })" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?')">
                                             <i class="fas fa-trash-alt"></i>
                                         </a>

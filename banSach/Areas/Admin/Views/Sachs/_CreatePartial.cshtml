@@ -36,6 +36,15 @@
         </div>
 
         <div class="row">
+            <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Giá chiết khấu</label>
+                @Html.EditorFor(model => model.GiaChietKhau, new { htmlAttributes = new { @class = "form-control", @type = "number", @min = "0" } })
+                @Html.ValidationMessageFor(model => model.GiaChietKhau, "", new { @class = "text-danger" })
+                <small class="text-muted">Để trống để tự động giảm 10% từ giá bán</small>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Ngày nhập hàng <span class="text-danger">*</span></label>
                 @Html.TextBoxFor(model => model.NgayNhapHang, new { @class = "form-control", @type = "date" })

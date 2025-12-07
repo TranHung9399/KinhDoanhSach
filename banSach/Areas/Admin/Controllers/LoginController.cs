@@ -30,6 +30,13 @@ namespace banSach.Areas.Admin.Controllers
 
             if (user != null)
             {
+                // ✅ KIỂM TRA TRẠNG THÁI TÀI KHOẢN NHÂN VIÊN
+                if (user.TrangThai == false || user.TrangThai == null)
+                {
+                    TempData["ErrorMessage"] = "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản lý để được hỗ trợ!";
+                    return View();
+                }
+                
                 FormsAuthentication.SetAuthCookie(user.TenTK, false);
                 Session["AdminUser"] = user;
                 var chucVu = db.ChucVus.FirstOrDefault(cv => cv.MaCV == user.MaCV);

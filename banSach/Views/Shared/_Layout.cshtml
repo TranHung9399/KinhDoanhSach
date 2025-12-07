@@ -23,509 +23,17 @@
     <link rel="stylesheet" href="~/Content/responsive.css">
     <link rel="stylesheet" href="~/Content/Site.css">
     <link rel="stylesheet" href="~/css/layout.css">
+    <link rel="stylesheet" href="~/Content/layout-custom.css">
+    <link rel="stylesheet" href="~/Content/chatbot.css">
+    <link rel="stylesheet" href="~/Content/wishlist-sidebar.css">
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/themify-icons/1.0.0/css/themify-icons.min.css"
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/themify-icons/1.0.0/css/themify-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-    <style>
-        body, html {
-            font-family: 'Merriweather', Georgia, serif !important;
-        }
-        /* Make the entire header sticky */
-        .header.shop {
-            position: static;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            background-color: #fff;
-            font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Ensure body has padding to prevent content from being hidden under the header */
-        .topbar {
-            background: #07a54b !important; /* Màu xanh dương, thêm !important để chắc chắn ghi đè */
-            color: #fff !important;
-        }
-
-        .middle-inner {
-            background: #EAECC6 !important;
-        }
-
-        .topbar .list-main li {
-            margin-right: 10px;
-        }
-
-        .middle-inner .container {
-            height: 100%; /* đảm bảo container cao bằng header */
-            display: flex;
-            align-items: center;
-        }
-
-        .middle-inner .row {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-
-        .middle-inner .col-lg-2,
-        .middle-inner .col-md-2,
-        .middle-inner .col-12,
-        .middle-inner .col-lg-8,
-        .middle-inner .col-md-7,
-        .middle-inner .col-md-3 {
-            /* Reset mọi float/bootstrap mặc định nếu có */
-            float: none;
-            width: auto;
-            min-width: 0;
-            flex: 1; /* Mỗi cột chiếm đều nhau */
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Căn giữa nội dung từng cột */
-            height: 100%;
-            box-sizing: border-box;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* CHỈNH: căn giữa ngang trong cột */
-            width: 100%;
-            height: 100%;
-            /* max-width: 130px;  Có thể bỏ để logo rộng, tràn giữa cột */
-        }
-
-            .logo img {
-                max-height: 80px;
-                width: auto;
-                display: block;
-                margin: 0 auto;
-                object-fit: contain;
-            }
-
-        .search-bar {
-            display: flex;
-            width: 100%;
-            max-width: 520px; /* hoặc tuỳ ý */
-            height: 48px;
-        }
-
-            .search-bar input[type="text"] {
-                flex: 1;
-                border: 2px solid #222;
-                border-right: none;
-                border-radius: 8px 0 0 8px;
-                padding: 0 16px;
-                font-size: 16px;
-                height: 100%;
-                outline: none;
-                background: #fff;
-                box-sizing: border-box;
-            }
-
-            .search-bar button,
-            .search-bar .btnn {
-                width: 56px;
-                background: #07a54b !important;
-                color: #fff;
-                border: 2px solid #222;
-                border-left: none;
-                border-radius: 0 8px 8px 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 22px;
-                height: 100%;
-                cursor: pointer;
-                transition: background 0.2s;
-                padding: 0;
-            }
-
-                .search-bar button:hover,
-                .search-bar .btnn:hover {
-                    background: #ff9800;
-                    color: #fff;
-                }
-
-        .right-bar {
-            justify-content: center;
-        }
-
-            .right-bar .shopping .single-icon {
-                font-size: 48px !important;
-                position: relative;
-                color: #222;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 100%;
-            }
-
-        }
-
-        .right-bar .shopping .total-count {
-            position: absolute;
-            top: 4px; /* căn chỉnh lên/xuống nếu cần */
-            right: -18px; /* căn chỉnh trái/phải nếu cần */
-            background: #ff9800;
-            color: #fff;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
-            font-weight: bold;
-            border: 2.5px solid #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.10);
-            line-height: 1;
-            padding: 0;
-            z-index: 9;
-        }
-
-        media (max-width: 991px) {
-            .middle-inner
-
-        {
-            height: auto;
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .middle-inner .container,
-        .middle-inner .row,
-        .middle-inner .col-lg-2,
-        .middle-inner .col-lg-8,
-        .middle-inner .col-md-2,
-        .middle-inner .col-md-7,
-        .middle-inner .col-md-3 {
-            height: auto;
-            display: block;
-        }
-
-        }
-
-        /* Ensure navbar and its children are not affected */
-        .navbar-collapse, .nav-inner {
-            width: 100%;
-        }
-
-        .footer {
-            background: #333;
-            color: #fff;
-            font-size: 13px;
-            padding: 24px 0 0;
-        }
-
-            .footer .container {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: space-between;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-
-        .footer-col {
-            flex: 1 1 220px;
-            min-width: 170px;
-            margin: 0 16px 16px;
-            font-size: 13px;
-        }
-
-        .footer-logo img {
-            height: 40px;
-            margin-bottom: 10px;
-        }
-
-        .footer-title {
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        .footer-contact li,
-        .footer-links li,
-        .footer-policies li {
-            font-size: 13px;
-            margin-bottom: 7px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .footer-contact i {
-            font-size: 20px;
-            color: #05a94e;
-            width: 28px;
-        }
-
-        .footer-links,
-        .footer-policies {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-            .footer-links a,
-            .footer-policies a {
-                color: #fff;
-                text-decoration: none;
-                transition: color 0.2s;
-            }
-
-                .footer-links a:hover,
-                .footer-policies a:hover {
-                    color: #05a94e;
-                }
-
-        .footer-news-desc {
-            font-size: 12px;
-            margin-bottom: 7px;
-            color: #fff;
-        }
-
-        .footer-newsletter-form {
-            display: flex;
-            align-items: center;
-            width: fit-content;
-            gap: 0;
-        }
-
-            .footer-newsletter-form input[type="email"] {
-                background: #fff;
-                color: #222;
-                border: none;
-                outline: none;
-                padding: 6px 10px;
-                width: 140px;
-                height: 32px;
-                font-size: 13px;
-                border-radius: 16px 0 0 16px;
-                box-sizing: border-box;
-            }
-
-            .footer-newsletter-form button {
-                background: #07a54b;
-                color: #fff;
-                border: none;
-                font-weight: bold;
-                font-size: 13px;
-                padding: 0 18px;
-                height: 32px;
-                margin-left: -4px;
-                border-radius: 0 16px 16px 0;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background 0.2s;
-            }
-
-                .footer-newsletter-form button:hover {
-                    background: #059441;
-                }
-
-        .footer-social {
-            margin-top: 18px;
-        }
-
-            .footer-social a {
-                color: #fff;
-                font-size: 18px;
-                margin-right: 10px;
-                transition: color 0.2s;
-            }
-
-                .footer-social a:hover {
-                    color: #05a94e;
-                }
-
-        .footer .fb-page {
-            margin-top: 10px;
-        }
-
-            .footer .fb-page img {
-                width: 120px;
-                border-radius: 4px;
-            }
-
-        .footer-bottom {
-            background: #222;
-            color: #bbb;
-            text-align: center;
-            font-size: 12px;
-            padding: 7px 0;
-            margin-top: 0;
-        }
-
-        .product-area {
-            margin-top: 15px !important;
-            padding-top: 15px !important;
-        }
-
-        /* CSS CHATBOT - Đặt mức ưu tiên cao nhất để không bị che */
-        #chatbot-toggler {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #007bff; /* Màu xanh chủ đạo */
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 2147483647; /* Max z-index để luôn nổi */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        #chatbot-toggler:hover {
-            transform: scale(1.1);
-            background: #0056b3;
-        }
-
-        #chatbot-container {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 380px;
-            height: 550px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 2147483646; /* Thấp hơn nút bấm 1 chút */
-            display: none; /* Mặc định ẩn */
-            flex-direction: column;
-            overflow: hidden;
-            font-family: 'Segoe UI', sans-serif;
-            border: 1px solid #e0e0e0;
-        }
-
-        /* Header */
-        .chat-header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            padding: 15px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        /* Body */
-        .chat-body {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: #f8f9fa;
-        }
-
-        /* Tin nhắn */
-        .message {
-            margin-bottom: 12px;
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 15px;
-            font-size: 14px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            position: relative;
-        }
-
-        .bot-message {
-            background: #e9ecef;
-            color: #333;
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
-            margin-right: auto;
-        }
-
-        .user-message {
-            background: #007bff;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 2px;
-            margin-left: auto;
-        }
-
-        /* Footer */
-        .chat-footer {
-            padding: 15px;
-            border-top: 1px solid #eee;
-            background: #fff;
-            display: flex;
-            gap: 10px;
-        }
-
-            .chat-footer input {
-                flex: 1;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 20px;
-                outline: none;
-                transition: border-color 0.3s;
-            }
-
-                .chat-footer input:focus {
-                    border-color: #007bff;
-                }
-
-            .chat-footer button {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background: #007bff;
-                color: white;
-                border: none;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-        /* Link sản phẩm trong tin nhắn */
-        .bot-message a {
-            color: #0056b3;
-            font-weight: bold;
-            text-decoration: none;
-            display: block;
-            margin-top: 5px;
-            border-top: 1px dashed #ccc;
-            padding-top: 5px;
-        }
-
-        /* Loading animation */
-        .typing-indicator {
-            font-style: italic;
-            color: #888;
-            font-size: 12px;
-            margin-bottom: 10px;
-            display: none;
-        }
-
-        /* Responsive Mobile */
-        @@media (max-width: 480px) {
-            #chatbot-container {
-                width: 90%;
-                height: 70%;
-                bottom: 90px;
-                right: 5%;
-            }
-        }
-    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" defer></script>
 </head>
 <body>
     @Html.AntiForgeryToken()
@@ -624,13 +132,11 @@
                                 </a>
                                 @Html.Action("_CartPartial", "Module")
                                 <div class="total-count-container">
-                                    <span style="font-weight: bold; font-size: 16px; margin-left: 15px; color: #222;">Giỏ hàng</span> <br>
-                                    <span class="total-count" style="font-size: 11px; color: #222;margin-left:13px; font-weight: 400;margin-l margin-top: 1px;">
-                                        @ViewBag.Tongsoluong
-                                    </span>
-                                    <span style="font-size: 11px; color: #222; font-weight: 400;">
-                                        sản phẩm
-                                    </span>
+                                    <div style="font-weight: bold; font-size: 16px; margin-left: 15px; color: #222;">Giỏ hàng</div>
+                                    <div style="font-size: 11px; color: #222; margin-left: 15px; font-weight: 400; display: flex; gap: 4px; align-items: center;">
+                                        <span>@ViewBag.Tongsoluong</span>
+                                        <span>sản phẩm</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -736,6 +242,16 @@
                 @Html.Action("_WishlistPartial", "Module")
             </div>
         </div>
+
+        <!-- Nút Gợi ý sách -->
+        <div class="suggest-float-btn">
+            <div class="icon-part">
+                <i class="bx bx-book-open"></i>
+            </div>
+            <div class="text-part">
+                <span>Gợi ý sách</span>
+            </div>
+        </div>
     }
 
 
@@ -769,247 +285,36 @@
 
     
     <!-- Jquery -->
-    <script src="~/Scripts/jquery.min.js"></script>
-    <script src="~/Scripts/jquery-migrate-3.0.0.js"></script>
-    <script src="~/Scripts/jquery-ui.min.js"></script>
+    <script src="~/Scripts/jquery.min.js" defer></script>
+    <script src="~/Scripts/jquery-migrate-3.0.0.js" defer></script>
+    <script src="~/Scripts/jquery-ui.min.js" defer></script>
     <!-- Popper JS -->
-    <script src="~/Scripts/popper.min.js"></script>
+    <script src="~/Scripts/popper.min.js" defer></script>
     <!-- Bootstrap JS -->
-    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js" defer></script>
     <!-- Color JS -->
-    <script src="~/Scripts/colors.js"></script>
+    <script src="~/Scripts/colors.js" defer></script>
     <!-- Slicknav JS -->
-    <script src="~/Scripts/slicknav.min.js"></script>
+    <script src="~/Scripts/slicknav.min.js" defer></script>
     <!-- Owl Carousel JS -->
-    <script src="~/Scripts/owl-carousel.js"></script>
+    <script src="~/Scripts/owl-carousel.js" defer></script>
     <!-- Magnific Popup JS -->
-    <script src="~/Scripts/magnific-popup.js"></script>
+    <script src="~/Scripts/magnific-popup.js" defer></script>
     <!-- Waypoints JS -->
-    <script src="~/Scripts/waypoints.min.js"></script>
+    <script src="~/Scripts/waypoints.min.js" defer></script>
     <!-- Countdown JS -->
-    <script src="~/Scripts/finalcountdown.min.js"></script>
+    <script src="~/Scripts/finalcountdown.min.js" defer></script>
     <!-- Nice Select JS -->
-    <script src="~/Scripts/nicesellect.js"></script>
+    <script src="~/Scripts/nicesellect.js" defer></script>
     <!-- Flex Slider JS -->
-    <script src="~/Scripts/flex-slider.js"></script>
+    <script src="~/Scripts/flex-slider.js" defer></script>
     <!-- ScrollUp JS -->
-    <script src="~/Scripts/scrollup.js"></script>
+    <script src="~/Scripts/scrollup.js" defer></script>
     <!-- Onepage Nav JS -->
-    <script src="~/Scripts/onepage-nav.min.js"></script>
-    <script src="~/Scripts/easing.js"></script>
-    <script src="~/Scripts/active.js"></script>
-    <script>
-// Setup AJAX to include anti-forgery token
-$(function () {
-    var token = $('input[name="__RequestVerificationToken"]').val();
-    console.log('Anti-forgery token:', token);
-    if (token) {
-        $.ajaxSetup({
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('RequestVerificationToken', token);
-            }
-        });
-    }
-});
-
-$(document).ready(function () {
-    console.log('Document ready!');
-
-    // FUNCTION: Reload wishlist sidebar
-    function reloadWishlistSidebar() {
-        console.log('Reloading wishlist sidebar...');
-        $.ajax({
-            url: '@Url.Action("LoadWishlistPartial", "Module")',
-            type: 'GET',
-            success: function (html) {
-                console.log('Wishlist sidebar reloaded successfully');
-                $('.like-offcanvas-body').html(html);
-            },
-            error: function (xhr, status, error) {
-                console.error('Error reloading wishlist:', error);
-            }
-        });
-    }
-
-    // Lưu function vào window để các script khác gọi được
-    window.reloadWishlistSidebar = reloadWishlistSidebar;
-
-    // 1. Khi click nút Yêu Thích - Mở sidebar và reload
-    $('.like-float-btn').on('click', function (e) {
-        e.stopPropagation();
-        console.log('Like button clicked');
-
-        // Reload wishlist trước khi mở
-        reloadWishlistSidebar();
-
-        $('.like-offcanvas').addClass('active');
-        $('.like-offcanvas-overlay').addClass('active');
-        $(this).addClass('active');
-
-    });
-
-    // 2. Khi click nút Close
-    $('.like-close-btn').on('click', function (e) {
-        e.stopPropagation();
-        console.log('Close button clicked');
-        $('.like-offcanvas').removeClass('active');
-        $('.like-offcanvas-overlay').removeClass('active');
-        $('.like-float-btn').removeClass('active');
-    });
-
-    // 3. Khi click vào overlay
-    $('.like-offcanvas-overlay').on('click', function () {
-        console.log('Overlay clicked');
-        $('.like-offcanvas').removeClass('active');
-        $(this).removeClass('active');
-        $('.like-float-btn').removeClass('active');
-    });
-
-    // 4. Ngăn click bên trong sidebar làm đóng sidebar
-    $('.like-offcanvas').on('click', function (e) {
-        e.stopPropagation();
-    });
-});
-
-// FUNCTION: Xóa sách khỏi yêu thích
-function removeFavoriteItem(maSach, btnElement) {
-    console.log('=== removeFavoriteItem CALLED ===');
-    console.log('MaSach:', maSach);
-
-    if (!confirm('Bạn có chắc muốn bỏ yêu thích sản phẩm này?')) {
-        return;
-    }
-
-    var $btn = $(btnElement);
-    var $item = $btn.closest('.like-list-item');
-
-    $.ajax({
-        url: '@Url.Action("RemoveFavorite", "YeuThich")',
-        type: 'POST',
-        data: { maSach: maSach },
-        success: function (res) {
-            console.log('AJAX Response:', res);
-            if (res.success) {
-                // Xóa item với animation
-                $item.fadeOut(300, function () {
-                    $(this).remove();
-
-                    // Kiểm tra nếu không còn item nào
-                    if ($('.like-list-item').length === 0) {
-                        $('.like-list').html('<p class="text-center like-empty-message" style="padding: 20px 0;">Bạn chưa có sản phẩm yêu thích nào.</p>');
-                    }
-                });
-                showCustomToast(res.message || 'Đã xóa khỏi yêu thích');
-            } else {
-                alert(res.message || 'Có lỗi xảy ra');
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error('AJAX Error:', xhr.responseText);
-            alert('Có lỗi kết nối. Vui lòng thử lại!');
-        }
-    });
-        }
-    // Biến lưu lịch sử chat (JSON String)
-    var chatHistory = [];
-
-    // Hàm bật/tắt khung chat
-    document.getElementById("chatbot-toggler").onclick = function () {
-        toggleChat();
-    };
-
-    function toggleChat() {
-        var chatBox = document.getElementById("chatbot-container");
-        if (chatBox.style.display === "none" || chatBox.style.display === "") {
-            chatBox.style.display = "flex";
-            document.getElementById("chat-input").focus();
-        } else {
-            chatBox.style.display = "none";
-        }
-    }
-
-    // Xử lý phím Enter
-    document.getElementById("chat-input").addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
-    });
-
-    // Hàm gửi tin nhắn
-    function sendMessage() {
-        var inputField = document.getElementById("chat-input");
-        var userText = inputField.value.trim();
-        if (userText === "") return;
-
-        // 1. Hiển thị tin nhắn của khách
-        appendMessage(userText, "user-message");
-        inputField.value = "";
-
-        // 2. Hiển thị "Đang soạn tin..."
-        var typingIndicator = document.getElementById("typing-indicator");
-        typingIndicator.style.display = "block";
-        scrollToBottom();
-
-        // 3. Gửi dữ liệu lên Server (Controller)
-        $.ajax({
-            url: '/Chatbot/SendMessage',
-            type: 'POST',
-            data: {
-                userMessage: userText,
-                historyJson: JSON.stringify(chatHistory)
-            },
-            success: function (response) {
-                typingIndicator.style.display = "none";
-                if (response.success) {
-                    appendMessage(response.reply, "bot-message");
-                    // Cập nhật lịch sử chat từ server trả về (nếu có)
-                    if (response.history) {
-                        chatHistory = JSON.parse(response.history);
-                    }
-                } else {
-                    appendMessage("Lỗi hệ thống: " + response.reply, "bot-message");
-                }
-            },
-            error: function (err) {
-                typingIndicator.style.display = "none";
-                appendMessage("⚠️ Không thể kết nối tới máy chủ. Vui lòng thử lại!", "bot-message");
-                console.log("Chatbot Error:", err);
-            }
-        });
-    }
-
-    // Hàm thêm tin nhắn vào khung chat
-    function appendMessage(text, className) {
-        var chatBox = document.getElementById("chat-box");
-        var msgDiv = document.createElement("div");
-        msgDiv.className = "message " + className;
-
-        // Chuyển đổi xuống dòng \n thành <br> để hiển thị đẹp
-        msgDiv.innerHTML = text.replace(/\n/g, "<br>");
-
-        chatBox.appendChild(msgDiv);
-        scrollToBottom();
-    }
-
-    // Tự động cuộn xuống cuối
-    function scrollToBottom() {
-        var chatBox = document.getElementById("chat-box");
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-        // Khi lưu vào history, loại bỏ HTML tags
-        function addToHistory(role, content) {
-            // Strip HTML tags trước khi lưu vào history
-            var tempDiv = document.createElement("div");
-            tempDiv.innerHTML = content;
-            var textOnly = tempDiv.textContent || tempDiv.innerText || "";
-
-            chatHistory.push({
-                Role: role,
-                Content: textOnly // Chỉ lưu text, không lưu HTML
-            });
-        }
-    </script>
+    <script src="~/Scripts/onepage-nav.min.js" defer></script>
+    <script src="~/Scripts/easing.js" defer></script>
+    <script src="~/Scripts/active.js" defer></script>
+    <script src="~/Scripts/layout-main.js" defer></script>
     @Scripts.Render("~/bundles/jquery") @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
 </body>

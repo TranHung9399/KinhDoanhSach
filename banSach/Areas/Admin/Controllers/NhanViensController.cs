@@ -78,6 +78,26 @@ namespace banSach.Areas.Admin.Controllers
 			return View(nhanVien);
 		}
 
+		// POST: Admin/NhanViens/ToggleStatus
+		[CheckPermission(Permission = "NV_EDIT")]
+		public ActionResult ToggleStatus(string id)
+		{
+			var nhanVien = db.NhanViens.Find(id);
+			if (nhanVien != null)
+			{
+				// Toggle status: true = Active, false = Inactive
+				nhanVien.TrangThai = !(nhanVien.TrangThai ?? false);
+				db.Entry(nhanVien).State = System.Data.Entity.EntityState.Modified;
+				db.SaveChanges();
+				TempData["Message"] = nhanVien.TrangThai == true ? "Đã kích hoạt tài khoản nhân viên!" : "Đã vô hiệu hóa tài khoản nhân viên!";
+			}
+			else
+			{
+				TempData["ErrorMessage"] = "Không tìm thấy nhân viên!";
+			}
+			return RedirectToAction("Index");
+		}
+
 		// GET: Admin/NhanViens/Create
 		[CheckPermission(Permission = "NV_CREATE")]
 		public ActionResult Create()

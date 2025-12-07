@@ -1,0 +1,128 @@
+﻿@model PagedList.IPagedList<banSach.Models.DonDatHang>
+@using PagedList.Mvc;
+
+@{
+    var tongTienDict = ViewBag.TongTienDict as Dictionary<string, decimal>;
+    var currentStatus = ViewBag.CurrentStatus as string ?? "";
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="orders-list">
+        @foreach (var order in Model)
+        {
+            var tongTien = tongTienDict != null && tongTienDict.ContainsKey(order.MaDonHang)
+                ? tongTienDict[order.MaDonHang]
+                : 0;
+
+            <div class="order-item-mini">
+                <div class="order-header-mini">
+                    <div class="order-id-mini">
+                        <i class="fas fa-receipt"></i>
+                        <strong>@order.MaDonHang</strong>
+                    </div>
+                    <div class="order-date-mini">
+                        <i class="fas fa-calendar-alt"></i>
+                        @(order.NgayDat?.ToString("dd/MM/yyyy") ?? "")
+                    </div>
+                </div>
+
+                <div class="order-status-row">
+                    @if (order.TrangThai == "Chờ xác nhận")
+                    {
+                        <span class="status-badge-mini pending">
+                            <i class="fas fa-clock"></i> Chờ xác nhận
+                        </span>
+                    }
+                    else if (order.TrangThai == "Đã xác nhận")
+                    {
+                        <span class="status-badge-mini confirmed">
+                            <i class="fas fa-check-double"></i> Đã xác nhận
+                        </span>
+                    }
+                    else if (order.TrangThai == "Đang giao hàng")
+                    {
+                        <span class="status-badge-mini shipping">
+                            <i class="fas fa-shipping-fast"></i> Đang giao hàng
+                        </span>
+                    }
+                    else if (order.TrangThai == "Hoàn tất")
+                    {
+                        <span class="status-badge-mini completed">
+                            <i class="fas fa-check-circle"></i> Hoàn tất
+                        </span>
+                    }
+                    else if (order.TrangThai == "Đã hủy")
+                    {
+                        <span class="status-badge-mini cancelled">
+                            <i class="fas fa-times-circle"></i> Đã hủy
+                        </span>
+                    }
+                </div>
+
+                <div class="order-products-mini">
+                    @foreach (var item in order.ChiTietDonHangs.Take(2))
+                    {
+                        <div class="product-mini">
+                            <img src="~/img/sach/@item.Sach.Hinh" alt="@item.Sach.TenSach" />
+                            <div class="product-info-mini">
+                                <p class="product-name-mini">@item.Sach.TenSach</p>
+                                <p class="product-quantity-mini">@item.SoLuong</p>
+                            </div>
+                        </div>
+                    }
+                    @if (order.ChiTietDonHangs.Count > 2)
+                    {
+                        <div class="more-products-mini">
+                            <i class="fas fa-ellipsis-h"></i> +@(order.ChiTietDonHangs.Count - 2) sản phẩm khác
+                        </div>
+                    }
+                </div>
+
+                <div class="order-footer-mini">
+                    <div class="order-total-mini">
+                        <span>Tổng tiền:</span>
+                        <strong>@String.Format("{0:#,##0}₫", tongTien)</strong>
+                    </div>
+                    <div class="order-actions-mini">
+                        <a href="@Url.Action("ChiTietDonHang", "Thongtin", new { id = order.MaDonHang })" class="btn-view-mini">
+                            <i class="fas fa-eye"></i> Chi tiết
+                        </a>
+                        @if (order.TrangThai == "Chờ xác nhận")
+                        {
+                            <a href="@Url.Action("HuyDonHang", "Thongtin", new { id = order.MaDonHang })" class="btn-cancel-mini" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-wrapper">
+        @Html.PagedListPager(Model, page => Url.Action("FilterOrders", new { status = currentStatus, page = page }),
+                  new PagedListRenderOptions
+                  {
+                      DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                      DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                      DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                      DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                      MaximumPageNumbersToDisplay = 5,
+                      UlElementClasses = new[] { "pagination" },
+                      LiElementClasses = new[] { "page-item" },
+                  })
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="fas fa-shopping-bag"></i>
+        <h5>Chưa có đơn hàng nào</h5>
+        <p>Hãy mua sắm ngay để nhận được những ưu đãi tốt nhất!</p>
+        <a href="@Url.Action("Index", "Home")" class="btn-primary-custom">
+            <i class="fas fa-shopping-cart"></i> Mua sắm ngay
+        </a>
+    </div>
+}

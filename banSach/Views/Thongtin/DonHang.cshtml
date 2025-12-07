@@ -2,132 +2,151 @@
 @using PagedList.Mvc;
 
 @{
-    var tongTienDict = ViewBag.TongTienDict as Dictionary<string, decimal>;
+    var countDict = ViewBag.CountDict as Dictionary<string, int> ?? new Dictionary<string, int>();
+    var currentStatus = ViewBag.CurrentStatus as string ?? "";
+    
+    // DEBUG: Log countDict để kiểm tra
+    var totalCount = countDict.Values.Sum();
+    System.Diagnostics.Debug.WriteLine($"=== DonHang.cshtml DEBUG ===");
+    System.Diagnostics.Debug.WriteLine($"CountDict Keys: {string.Join(", ", countDict.Keys)}");
+    System.Diagnostics.Debug.WriteLine($"Total Count: {totalCount}");
+    foreach (var kvp in countDict)
+    {
+        System.Diagnostics.Debug.WriteLine($"  {kvp.Key}: {kvp.Value}");
+    }
 }
 <link rel="stylesheet" href="@Url.Content("~/css/phantrang.css")" />
 
-@if (Model != null && Model.Any())
-{
-    <div class="orders-list">
-        @foreach (var order in Model)
-        {
-            var tongTien = tongTienDict != null && tongTienDict.ContainsKey(order.MaDonHang)
-                ? tongTienDict[order.MaDonHang]
-                : 0;
+<!-- Filter Buttons - CHỈ RENDER 1 LẦN -->
+<div class="order-filter-tabs">
+    <button class="filter-tab @(string.IsNullOrEmpty(currentStatus) ? "active" : "")" data-status="" onclick="filterOrders('')">
+        <i class="fas fa-list"></i> Tất cả
+        <span class="badge-count">@countDict.Values.Sum()</span>
+    </button>
+    <button class="filter-tab @(currentStatus == "Chờ xác nhận" ? "active" : "")" data-status="Chờ xác nhận" onclick="filterOrders('Chờ xác nhận')">
+        <i class="fas fa-clock"></i> Chờ xác nhận
+        <span class="badge-count">@(countDict.ContainsKey("Chờ xác nhận") ? countDict["Chờ xác nhận"] : 0)</span>
+    </button>
+    <button class="filter-tab @(currentStatus == "Đã xác nhận" ? "active" : "")" data-status="Đã xác nhận" onclick="filterOrders('Đã xác nhận')">
+        <i class="fas fa-check-double"></i> Đã xác nhận
+        <span class="badge-count">@(countDict.ContainsKey("Đã xác nhận") ? countDict["Đã xác nhận"] : 0)</span>
+    </button>
+    <button class="filter-tab @(currentStatus == "Đang giao hàng" ? "active" : "")" data-status="Đang giao hàng" onclick="filterOrders('Đang giao hàng')">
+        <i class="fas fa-shipping-fast"></i> Đang giao hàng
+        <span class="badge-count">@(countDict.ContainsKey("Đang giao hàng") ? countDict["Đang giao hàng"] : 0)</span>
+    </button>
+    <button class="filter-tab @(currentStatus == "Hoàn tất" ? "active" : "")" data-status="Hoàn tất" onclick="filterOrders('Hoàn tất')">
+        <i class="fas fa-check-circle"></i> Hoàn tất
+        <span class="badge-count">@(countDict.ContainsKey("Hoàn tất") ? countDict["Hoàn tất"] : 0)</span>
+    </button>
+    <button class="filter-tab @(currentStatus == "Đã hủy" ? "active" : "")" data-status="Đã hủy" onclick="filterOrders('Đã hủy')">
+        <i class="fas fa-times-circle"></i> Đã hủy
+        <span class="badge-count">@(countDict.ContainsKey("Đã hủy") ? countDict["Đã hủy"] : 0)</span>
+    </button>
+</div>
 
-            <div class="order-item-mini">
-                <div class="order-header-mini">
-                    <div class="order-id-mini">
-                        <i class="fas fa-receipt"></i>
-                        <strong>@order.MaDonHang</strong>
-                    </div>
-                    <div class="order-date-mini">
-                        <i class="fas fa-calendar-alt"></i>
-                        @(order.NgayDat?.ToString("dd/MM/yyyy") ?? "")
-                    </div>
-                </div>
+<!-- Loading Spinner -->
+<div id="orders-loading" style="display: none; text-align: center; padding: 40px;">
+    <div class="spinner-border text-success" role="status">
+        <span class="sr-only">Đang tải...</span>
+    </div>
+</div>
 
-                <div class="order-status-row">
-                    @if (order.TrangThai == "Chờ xác nhận")
-                    {
-                        <span class="status-badge-mini pending">
-                            <i class="fas fa-clock"></i> Chờ xác nhận
-                        </span>
-                    }
-                    else if (order.TrangThai == "Đã xác nhận")
-                    {
-                        <span class="status-badge-mini confirmed">
-                            <i class="fas fa-check-double"></i> Đã xác nhận
-                        </span>
-                    }
-                    else if (order.TrangThai == "Đang giao hàng")
-                    {
-                        <span class="status-badge-mini shipping">
-                            <i class="fas fa-shipping-fast"></i> Đang giao hàng
-                        </span>
-                    }
-                    else if (order.TrangThai == "Hoàn tất")
-                    {
-                        <span class="status-badge-mini completed">
-                            <i class="fas fa-check-circle"></i> Hoàn tất
-                        </span>
-                    }
-                    else if (order.TrangThai == "Đã hủy")
-                    {
-                        <span class="status-badge-mini cancelled">
-                            <i class="fas fa-times-circle"></i> Đã hủy
-                        </span>
-                    }
-                </div>
+<!-- Orders Container - CHỈ CÁI NÀY BỊ REPLACE KHI AJAX -->
+<div id="orders-container">
+    @Html.Partial("_OrdersList", ViewBag.DonHangs as PagedList.IPagedList<banSach.Models.DonDatHang>)
+</div>
 
-                <div class="order-products-mini">
-                    @foreach (var item in order.ChiTietDonHangs.Take(2))
-                    {
-                        <div class="product-mini">
-                            <img src="~/img/sach/@item.Sach.Hinh" alt="@item.Sach.TenSach" />
-                            <div class="product-info-mini">
-                                <p class="product-name-mini">@item.Sach.TenSach</p>
-                                <p class="product-quantity-mini">@item.SoLuong</p>
-                            </div>
-                        </div>
-                    }
-                    @if (order.ChiTietDonHangs.Count > 2)
-                    {
-                        <div class="more-products-mini">
-                            <i class="fas fa-ellipsis-h"></i> +@(order.ChiTietDonHangs.Count - 2) sản phẩm khác
-                        </div>
-                    }
-                </div>
-
-                <div class="order-footer-mini">
-                    <div class="order-total-mini">
-                        <span>Tổng tiền:</span>
-                        <strong>@String.Format("{0:#,##0}₫", tongTien)</strong>
-                    </div>
-                    <div class="order-actions-mini">
-                        <a href="@Url.Action("ChiTietDonHang", "Thongtin", new { id = order.MaDonHang })" class="btn-view-mini">
-                            <i class="fas fa-eye"></i> Chi tiết
-                        </a>
-                        @if (order.TrangThai == "Chờ xác nhận")
-                        {
-                            <a href="@Url.Action("HuyDonHang", "Thongtin", new { id = order.MaDonHang })" class="btn-cancel-mini" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
-                                <i class="fas fa-times"></i> Hủy
-                            </a>
-                        }
-                    </div>
-                </div>
-            </div>
+<style>
+        :root {
+            --primary-green: #2ecc71;
+            --dark-green: #27ae60;
+            --light-green: #a8e6cf;
+            --pale-green: #f0fff4;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
         }
-    </div>
 
-    <!-- Pagination Controls -->
-    <div class="pagination-wrapper">
-        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }) + "#donhang",
-                  new PagedListRenderOptions
-                  {
-                      DisplayLinkToFirstPage = PagedListDisplayMode.Always,
-                      DisplayLinkToLastPage = PagedListDisplayMode.Always,
-                      DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
-                      DisplayLinkToNextPage = PagedListDisplayMode.Always,
-                      MaximumPageNumbersToDisplay = 5,
-                      UlElementClasses = new[] { "pagination" },
-                      LiElementClasses = new[] { "page-item" },
-                  })
-    </div>
-}
-else
-{
-    <div class="empty-state">
-        <i class="fas fa-shopping-bag"></i>
-        <h5>Chưa có đơn hàng nào</h5>
-        <p>Hãy mua sắm ngay để nhận được những ưu đãi tốt nhất!</p>
-        <a href="@Url.Action("Index", "Home")" class="btn-primary-custom">
-            <i class="fas fa-shopping-cart"></i> Mua sắm ngay
-        </a>
-    </div>
-}
+        /* Filter Tabs Styles */
+        .order-filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
 
-    <style>
+        .filter-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+            .filter-tab:hover {
+                background: #e9ecef;
+                color: #333;
+                transform: translateY(-2px);
+            }
+
+            .filter-tab.active {
+                background: linear-gradient(135deg, #07a54b 0%, #05863d 100%);
+                color: white;
+                border-color: #07a54b;
+                box-shadow: 0 4px 8px rgba(7, 165, 75, 0.3);
+            }
+
+            .filter-tab i {
+                font-size: 16px;
+            }
+
+            .filter-tab .badge-count {
+                background: #ff9800;
+                color: white;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: bold;
+                min-width: 24px;
+                text-align: center;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .filter-tab.active .badge-count {
+                background: rgba(255, 255, 255, 0.35);
+                color: white;
+            }
+
+        /* Loading Spinner */
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border: 0.4em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border .75s linear infinite;
+        }
+
+        .text-success {
+            color: #07a54b !important;
+        }
+
+        @@keyframes spinner-border {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -439,3 +458,62 @@ else
             }
         }
     </style>
+
+<script>
+    var currentStatus = '@currentStatus';
+    var currentPage = 1;
+
+    function filterOrders(status) {
+        currentStatus = status;
+        currentPage = 1;
+        loadOrders(status, 1);
+    }
+
+    function loadOrders(status, page) {
+        // Show loading
+        $('#orders-loading').show();
+        $('#orders-container').hide();
+
+        $.ajax({
+            url: '@Url.Action("FilterOrders", "Thongtin")',
+            type: 'GET',
+            data: {
+                status: status,
+                page: page
+            },
+            success: function (response) {
+                $('#orders-container').html(response);
+                $('#orders-loading').hide();
+                $('#orders-container').show();
+
+                // Update active tab
+                $('.filter-tab').removeClass('active');
+                $('.filter-tab[data-status="' + status + '"]').addClass('active');
+
+                // Scroll to orders section
+                $('html, body').animate({
+                    scrollTop: $('#tab-donhang').offset().top - 100
+                }, 500);
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading orders:', error);
+                $('#orders-loading').hide();
+                $('#orders-container').html('<div class="alert alert-danger">Có lỗi xảy ra khi tải đơn hàng. Vui lòng thử lại!</div>').show();
+            }
+        });
+    }
+
+    // Handle pagination clicks
+    $(document).on('click', '.pagination a', function (e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        if (!url || url === '#') return;
+
+        // Extract page number from URL
+        var pageMatch = url.match(/page=(\d+)/);
+        if (pageMatch) {
+            var page = parseInt(pageMatch[1]);
+            loadOrders(currentStatus, page);
+        }
+    });
+</script>
